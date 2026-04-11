@@ -29,16 +29,14 @@ export interface Objective {
     category: string;
 }
 
-export interface Section {
-    explanation: {
-        title: string;
-        paragraph: string;
-    };
-    objectives: Objective[];
+export interface ExplanationSection {
+    title: string;
+    paragraph: string;
 }
 
 export interface AnalysisResult {
-    sections: Section[];
+    explanation: ExplanationSection[];
+    objectives: Objective[];
     category?: string;
     xp?: number;
     scores?: Scores;

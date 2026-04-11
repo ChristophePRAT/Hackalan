@@ -35,17 +35,19 @@ export default function ResultPage() {
   }, [router])
 
   const copy = () => {
-    if (typeof window !== 'undefined' && result?.sections) {
+    if (typeof window !== 'undefined' && result) {
       let text = ''
-      result.sections.forEach(section => {
-        text += `${section.explanation.title}\n`
-        text += `${section.explanation.paragraph}\n\n`
-        if (section.objectives.length > 0) {
-          section.objectives.forEach(obj => {
-            text += `• ${obj.title}\n${obj.description}\n\n`
-          })
-        }
-      })
+      if (result.explanation) {
+        result.explanation.forEach(exp => {
+          text += `${exp.title}\n`
+          text += `${exp.paragraph}\n\n`
+        })
+      }
+      if (result.objectives) {
+        result.objectives.forEach(obj => {
+          text += `• ${obj.title}\n${obj.description}\n\n`
+        })
+      }
       navigator.clipboard.writeText(text)
       setCopied(true)
       setTimeout(() => setCopied(false), 2200)
@@ -105,32 +107,36 @@ export default function ResultPage() {
           {/* Content card */}
           <div className="rounded-[20px] border-2 overflow-hidden mb-8"
             style={{ borderColor: cat.color + '40', backgroundColor: '#FAFAFA' }}>
-            {result.sections.map((section, sIdx) => (
-              <div key={sIdx}>
-                <div className="px-8 pt-8 pb-6" style={{ borderBottom: sIdx < result.sections.length - 1 ? '1px solid var(--color-alan-border)' : 'none', backgroundColor: sIdx === 0 ? cat.bg + 'CC' : '#FAFAFA' }}>
-                  <h2 className="font-bold leading-snug text-[1.5rem]" style={{color: 'var(--color-alan-text)'}}>{section.explanation.title}</h2>
-                </div>
-                <div className="px-8 py-8 text-[1rem] leading-relaxed" style={{color: 'var(--color-alan-text)'}}>
-                  <p className="mb-6">{section.explanation.paragraph}</p>
-                  {section.objectives.length > 0 && (
-                    <div>
-                      <h3 className="font-bold text-lg mb-4" style={{color: 'var(--color-alan-text)'}}>Objectives</h3>
-                      <div className="space-y-4">
-                        {section.objectives.map((obj, oIdx) => (
-                          <div key={oIdx} className="flex gap-3">
-                            <span className="shrink-0 mt-1 w-1.5 h-1.5 rounded-full" style={{backgroundColor: cat.color}} />
-                            <div className="flex-1">
-                              <p className="font-semibold mb-1">{obj.title}</p>
-                              <p className="text-sm">{obj.description}</p>
-                            </div>
-                          </div>
-                        ))}
+            {result.explanation && result.explanation.length > 0 && (
+              <>
+                {result.explanation.map((exp, expIdx) => (
+                  <div key={expIdx}>
+                    <div className="px-8 pt-8 pb-6" style={{ borderBottom: '1px solid var(--color-alan-border)', backgroundColor: expIdx === 0 ? cat.bg + 'CC' : '#FAFAFA' }}>
+                      <h2 className="font-bold leading-snug text-[1.5rem]" style={{color: 'var(--color-alan-text)'}}>{exp.title}</h2>
+                    </div>
+                    <div className="px-8 py-8 text-[1rem] leading-relaxed" style={{color: 'var(--color-alan-text)'}}>
+                      <p className="mb-0">{exp.paragraph}</p>
+                    </div>
+                  </div>
+                ))}
+              </>
+            )}
+            {result.objectives && result.objectives.length > 0 && (
+              <div className="px-8 py-8 text-[1rem] leading-relaxed" style={{color: 'var(--color-alan-text)'}}>
+                <h3 className="font-bold text-lg mb-6" style={{color: 'var(--color-alan-text)'}}>Objectives</h3>
+                <div className="space-y-4">
+                  {result.objectives.map((obj, oIdx) => (
+                    <div key={oIdx} className="flex gap-3">
+                      <span className="shrink-0 mt-1 w-1.5 h-1.5 rounded-full" style={{backgroundColor: cat.color}} />
+                      <div className="flex-1">
+                        <p className="font-semibold mb-1">{obj.title}</p>
+                        <p className="text-sm">{obj.description}</p>
                       </div>
                     </div>
-                  )}
+                  ))}
                 </div>
               </div>
-            ))}
+            )}
             <div className="px-8 pb-8">
               <button onClick={copy}
                 className="w-full py-4 rounded-2xl border-2 font-semibold text-base transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"

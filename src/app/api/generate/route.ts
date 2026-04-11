@@ -75,21 +75,21 @@ const categories = z.literal([
     "Personal development",
 ]);
 
-const ObjectivesResponse = z.array(
-    z.object({
-        explanation: z.object({
+const ObjectivesResponse = z.object({
+    explanation: z.array(
+        z.object({
             title: z.string(),
             paragraph: z.string(),
         }),
-        objectives: z.array(
-            z.object({
-                title: z.string(),
-                description: z.string(),
-                category: z.string(),
-            }),
-        ),
-    }),
-);
+    ),
+    objectives: z.array(
+        z.object({
+            title: z.string(),
+            description: z.string(),
+            category: z.string(),
+        }),
+    ),
+});
 
 const FORMAT_INSTRUCTIONS: Record<Format, string> = {
     article: `
@@ -237,11 +237,24 @@ export async function POST(req: NextRequest) {
                     ),
                 },
             ],
-            maxTokens: 5000,
+            // maxTokens: 2000,
             responseFormat: ObjectivesResponse,
         });
 
-        return NextResponse.json(result);
+        const messageContent = result.choices[0].message?.content;
+
+        // If content is a string, parse it as JSON
+        let parsedContent = messageContent;
+        if (typeof messageContent === 'string') {
+            try {
+                parsedContent = JSON.parse(messageContent);
+            } catch {
+                parsedContent = messageContent;
+            }
+        }
+
+        console.log("[/api/generate] Parsed content:", parsedContent);
+        return NextResponse.json(parsedContent);
     } catch (err) {
         console.error("[/api/generate] Mistral error:", err);
         console.error("Request body was:", body);

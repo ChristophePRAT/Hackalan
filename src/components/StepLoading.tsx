@@ -88,19 +88,25 @@ export default function StepLoading({
                     }),
                 });
 
-                const generated = await generateRes.json();
-
-                // Extract category from first objective found in sections
-                let category: string | undefined;
-                for (const section of generated.sections || []) {
-                    if (section.objectives?.[0]?.category) {
-                        category = section.objectives[0].category;
-                        break;
-                    }
+                if (!generateRes.ok) {
+                    throw new Error(
+                        `Generate API failed with status ${generateRes.status}`,
+                    );
                 }
 
+                const generated = await generateRes.json();
+
+                console.log("Generated content:", generated);
+                console.log("Explanation:", generated.explanation);
+                console.log("Objectives:", generated.objectives);
+
+                // Extract category from first objective
+                const category = generated.objectives?.[0]?.category;
+                console.log("Category:", category);
+
                 const finalResult: AnalysisResult = {
-                    sections: generated.sections || [],
+                    explanation: generated.explanation || [],
+                    objectives: generated.objectives || [],
                     category,
                     scores: {
                         medical: analysis.overallHealthScore?.totalScore || 92,
@@ -114,16 +120,14 @@ export default function StepLoading({
             } catch (error) {
                 console.error("Pipeline failed:", error);
                 return {
-                    sections: [
+                    explanation: [
                         {
-                            explanation: {
-                                title: `Your ${data.format || "content"}`,
-                                paragraph:
-                                    "We encountered an issue generating your content. Please try again later.",
-                            },
-                            objectives: [],
+                            title: `Your ${data.format || "content"}`,
+                            paragraph:
+                                "We encountered an issue generating your content. Please try again later.",
                         },
                     ],
+                    objectives: [],
                     category: undefined,
                     scores: { medical: 0, brand: 0, personalization: 0 },
                     xp: 0,
