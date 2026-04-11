@@ -1,5 +1,5 @@
 @import "tailwindcss";
-
+@source "../";
 @theme {
   --color-alan-blue: #5C58F6;
   --color-alan-blue-hover: #4844D4;
