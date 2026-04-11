@@ -39,6 +39,8 @@ export interface AnalysisResult {
   category?: string;
   scores: Scores;
   xp?: number;
+  // Analysis data from the API
+  analysisData?: Record<string, any>;
 }
 
 export interface StepProps {

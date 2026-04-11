@@ -603,8 +603,9 @@ export async function GET(request: Request) {
     
     try {
         // Fetch data from our own API endpoint
-        const fetchUrl = `/api/fetch_data?userId=${userId}&dataType=daily&startDate=${startDate}&endDate=${endDate}`;
-        
+        const baseUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000';
+        const fetchUrl = `${baseUrl}/api/fetch_data?userId=${userId}&dataType=daily&startDate=${startDate}&endDate=${endDate}`;
+
         const response = await fetch(fetchUrl);
         
         if (!response.ok) {

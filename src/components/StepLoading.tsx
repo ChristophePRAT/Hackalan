@@ -24,6 +24,7 @@ export default function StepLoading({
     const [progress, setProgress] = useState(0);
     const [stage, setStage] = useState(0);
     const [msgIdx, setMsgIdx] = useState(0);
+    const [analysisData, setAnalysisData] = useState<any>(null);
     const started = useRef(false);
     const progressRef = useRef(0);
 
@@ -49,6 +50,7 @@ export default function StepLoading({
                     { method: "GET" },
                 );
                 const analysis = await analysisRes.json();
+                setAnalysisData(analysis);
                 updateProgress(53);
                 setStage(1);
 
@@ -90,6 +92,7 @@ export default function StepLoading({
                         personalization: 95,
                     },
                     xp: Math.floor(100 + Math.random() * 50),
+                    analysisData: analysis,
                 } satisfies AnalysisResult;
             } catch (error) {
                 console.error("Pipeline failed:", error);
@@ -202,6 +205,48 @@ export default function StepLoading({
                     {progress}%
                 </span>
             </div>
+
+            {/* Fun Analysis Preview */}
+            {analysisData?.overallHealthScore && (
+                <div className="w-full max-w-sm mb-12 p-6 rounded-2xl border border-[#EBEBEF] bg-gradient-to-br from-[#F5F4FF] to-white">
+                    <p className="text-xs uppercase tracking-widest font-bold text-[#8A8A95] mb-3">
+                        Early peek at your analysis
+                    </p>
+                    <div className="mb-5">
+                        <div className="flex items-baseline gap-2 mb-2">
+                            <span className="text-4xl font-extrabold text-[#5C58F6]">
+                                {analysisData.overallHealthScore.totalScore}
+                            </span>
+                            <span className="text-sm font-bold text-[#8A8A95]">
+                                / 100
+                            </span>
+                        </div>
+                        <p className="text-sm text-[#6E6E73] font-medium">
+                            {analysisData.overallHealthScore.summary?.status || "Loading your score..."}
+                        </p>
+                    </div>
+
+                    {analysisData.overallHealthScore.componentScores && (
+                        <div className="grid grid-cols-3 gap-2">
+                            {Object.entries(
+                                analysisData.overallHealthScore.componentScores
+                            ).map(([key, value]: [string, any]) => (
+                                <div
+                                    key={key}
+                                    className="p-2 rounded-lg bg-white border border-[#EBEBEF] text-center hover:border-[#5C58F6] hover:bg-[#F5F4FF] transition-all cursor-pointer"
+                                >
+                                    <p className="text-xs font-bold text-[#8A8A95] uppercase tracking-wide mb-1">
+                                        {key}
+                                    </p>
+                                    <p className="text-lg font-bold text-[#111117]">
+                                        {value}
+                                    </p>
+                                </div>
+                            ))}
+                        </div>
+                    )}
+                </div>
+            )}
 
             {/* Stages */}
             <div className="w-full flex flex-col gap-2 mb-8">
