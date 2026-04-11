@@ -216,24 +216,40 @@ export default function ResultPage() {
                                 audioState === "ready" ? "#F5F4FF" : "#F7F7F9",
                         }}
                     >
-                        <div className="flex items-center gap-2.5 mb-4">
-                            <span className="text-lg">🎧</span>
-                            <p className="font-bold text-base text-[#191919]">
-                                Listen to your challenges
-                            </p>
+                        <div className="flex items-start justify-between gap-4 mb-4">
+                            <div className="flex items-center gap-2.5">
+                                <span className="text-lg">🎧</span>
+                                <p className="font-bold text-base text-[#191919]">
+                                    Listen to your challenges
+                                </p>
+                            </div>
+                            {audioState === "ready" && (
+                                <img
+                                    src="/mbappe.jpeg"
+                                    alt="Coach"
+                                    className="h-16 w-16 rounded-lg object-cover shrink-0"
+                                />
+                            )}
                         </div>
                         {audioState === "loading" && (
-                            <div className="flex items-center gap-3">
-                                <div
-                                    className="w-4 h-4 rounded-full border-2 animate-spin"
-                                    style={{
-                                        borderColor: "#5C58F6",
-                                        borderTopColor: "transparent",
-                                    }}
+                            <div className="flex items-center justify-between gap-3">
+                                <div className="flex items-center gap-3">
+                                    <div
+                                        className="w-4 h-4 rounded-full border-2 animate-spin"
+                                        style={{
+                                            borderColor: "#5C58F6",
+                                            borderTopColor: "transparent",
+                                        }}
+                                    />
+                                    <p className="text-sm text-[#6E6E73]">
+                                        Generating your audio coach...
+                                    </p>
+                                </div>
+                                <img
+                                    src="/mbappe+founders.png"
+                                    alt="Coach loading"
+                                    className="h-14 w-14 rounded-lg object-cover shrink-0 animate-bounce"
                                 />
-                                <p className="text-sm text-[#6E6E73]">
-                                    Generating your audio coach...
-                                </p>
                             </div>
                         )}
                         {audioState === "ready" && audioUrl && (

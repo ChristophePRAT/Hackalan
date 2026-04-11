@@ -143,6 +143,30 @@ export default function StepLoading({
 
     return (
         <div className="flex flex-col items-center text-center py-8">
+            {/* Mbappe animated character */}
+            <div className="mb-8 relative h-32 w-32">
+                <img
+                    src="/mbappe.jpeg"
+                    alt="Mo Coach"
+                    className="absolute inset-0 w-full h-full rounded-full object-cover animate-pulse"
+                />
+                <img
+                    src="/mbappe+founders.png"
+                    alt="Mo Coach Comic"
+                    className="absolute inset-0 w-full h-full rounded-full object-cover"
+                    style={{
+                        animation: "bounce 2s infinite",
+                    }}
+                />
+            </div>
+
+            <style>{`
+                @keyframes bounce {
+                    0%, 100% { transform: translateY(0); opacity: 0.7; }
+                    50% { transform: translateY(-10px); opacity: 1; }
+                }
+            `}</style>
+
             <h2 className="text-[1.6rem] font-bold tracking-tight text-[#111117] mb-1.5">
                 Mo is on it...
             </h2>
