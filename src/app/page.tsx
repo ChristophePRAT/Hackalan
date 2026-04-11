@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import StepProfile  from '../components/StepProfile'
-import StepGoal     from '../components/StepGoal'
 import StepCustom   from '../components/StepCustom'
 import StepFormat   from '../components/StepFormat'
 import StepDuration from '../components/StepDuration'
@@ -11,8 +10,8 @@ import StepLoading  from '../components/StepLoading'
 import StepResult   from '../components/StepResult'
 import { AppData, AnalysisResult, StepProps } from '../types'
 
-// Steps: 0=profile, 1=goal, 2=custom, 3=format, 4=duration, 5=confirm, 6=loading, 7=result
-// Progress bar covers steps 1–5 (5 segments)
+// Steps: 0=profile, 1=custom, 2=format, 3=duration, 4=confirm, 5=loading, 6=result
+// Progress bar covers steps 1–4
 
 export default function Home() {
   const [step, setStep]     = useState(0)
@@ -32,9 +31,9 @@ export default function Home() {
 
   const props: StepProps = { data, next, back, result, setResult, restart }
 
-  // Progress bar shows on steps 1–5 (goal → confirm)
-  const showProgress = step >= 1 && step <= 5
-  const progressStep = step - 1 // maps step 1→0, 2→1, ... 5→4
+  // Progress bar shows on steps 1–4
+  const showProgress = step >= 1 && step <= 4
+  const progressStep = step - 1 // maps 1→0, 2→1, 3→2, 4→3
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-12 py-20">
@@ -54,7 +53,7 @@ export default function Home() {
         {/* Progress bar */}
         {showProgress && (
           <div className="flex gap-2 mb-16 fade-up">
-            {[0,1,2,3,4].map(i => (
+            {[0,1,2,3].map(i => (
               <div
                 key={i}
                 className="h-[5px] flex-1 rounded-full transition-all duration-300"
@@ -66,13 +65,12 @@ export default function Home() {
 
         <div key={step} className="fade-up">
           {step === 0 && <StepProfile  {...props} />}
-          {step === 1 && <StepGoal     {...props} />}
-          {step === 2 && <StepCustom   {...props} />}
-          {step === 3 && <StepFormat   {...props} />}
-          {step === 4 && <StepDuration {...props} />}
-          {step === 5 && <StepConfirm  {...props} />}
-          {step === 6 && <StepLoading  {...props} />}
-          {step === 7 && <StepResult   {...props} />}
+          {step === 1 && <StepCustom   {...props} />}
+          {step === 2 && <StepFormat   {...props} />}
+          {step === 3 && <StepDuration {...props} />}
+          {step === 4 && <StepConfirm  {...props} />}
+          {step === 5 && <StepLoading  {...props} />}
+          {step === 6 && <StepResult   {...props} />}
         </div>
 
       </div>

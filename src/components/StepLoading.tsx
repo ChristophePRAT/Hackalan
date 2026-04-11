@@ -49,7 +49,7 @@ export default function StepLoading({ data, next, setResult }: Pick<StepProps, '
       try {
         // 1. Send request to analyse_data
         console.log("Step 1: Analyzing health data...");
-        const analysisRes = await fetch('/api/analyse_data?userId=a463e0bf26d790d6afdfda0cfd161cf5', {
+        const analysisRes = await fetch(`/api/analyse_data?userId=${data.profileId || 'a463e0bf26d790d6afdfda0cfd161cf5'}`, {
           method: 'GET',
         });
         const analysis = await analysisRes.json();
@@ -73,11 +73,11 @@ export default function StepLoading({ data, next, setResult }: Pick<StepProps, '
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
-            topic: `User goal: ${data.goal}. User situation: ${data.custom}. Health insight: ${analysis.overallHealthScore?.summary?.primaryInsight || 'Maintain good habits'}. Average daily sleep: ${avgSleepHours} hours.`,
+            topic: `User situation: ${data.custom || 'General wellness'}. Health insight: ${analysis.overallHealthScore?.summary?.primaryInsight || 'Maintain good habits'}. Average daily sleep: ${avgSleepHours} hours.`,
             format: data.format === 'video' ? 'video_script' : data.format || 'article',
             userProfile: {
               name: "Alex",
-              healthFocus: data.goal || "general wellness",
+              healthFocus: "general wellness",
               level: "intermediate"
             }
           }),
@@ -87,23 +87,26 @@ export default function StepLoading({ data, next, setResult }: Pick<StepProps, '
         console.log("Step 2 Complete: Content generated successfully.");
         
         const finalResult: AnalysisResult = {
-          title: `Your personalized ${data.goal} ${data.format}`,
+          title: generated.title || `Your personalized ${data.format}`,
           body: generated.content,
+          category: generated.category,
           scores: {
             medical: analysis.overallHealthScore?.totalScore || 92,
             brand: 90,
             personalization: 95
           },
-          xp: 150
+          xp: generated.xp || 120,
         };
 
         return finalResult;
       } catch (error) {
         console.error("Pipeline failed:", error);
         return {
-          title: `Your ${data.format} for ${data.goal}`,
+          title: `Your ${data.format || 'content'}`,
           body: "We encountered an issue generating your content. Please try again later.",
-          scores: { medical: 0, brand: 0, personalization: 0 }
+          category: undefined,
+          scores: { medical: 0, brand: 0, personalization: 0 },
+          xp: 0,
         };
       }
     }

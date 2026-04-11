@@ -8,3 +8,20 @@ export const userIds = [
     "eb634efc4ac80c9ed6a355c8a99adb83",
     "79187771a36482f013203b32712e873d",
 ];
+
+export const CATEGORIES = [
+  { label: 'Mental well-being',            color: '#8B5CF6', bg: '#F5F3FF' },
+  { label: 'Sleep',                         color: '#6366F1', bg: '#EEF2FF' },
+  { label: 'Sport & physical activity',     color: '#F97316', bg: '#FFF7ED' },
+  { label: 'Nutrition',                     color: '#22C55E', bg: '#F0FDF4' },
+  { label: 'Breathing & relaxation',        color: '#06B6D4', bg: '#ECFEFF' },
+  { label: 'Digital detox',                 color: '#EC4899', bg: '#FDF2F8' },
+  { label: 'Habits & addictions',           color: '#F59E0B', bg: '#FFFBEB' },
+  { label: 'Productivity & organization',   color: '#3B82F6', bg: '#EFF6FF' },
+  { label: 'Relationships & social life',   color: '#F43F5E', bg: '#FFF1F2' },
+  { label: 'Personal development',          color: '#A855F7', bg: '#FAF5FF' },
+] as const;
+
+export type CategoryLabel = typeof CATEGORIES[number]['label'];
+
+export const XP_PER_LEVEL = 300;

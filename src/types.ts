@@ -19,6 +19,7 @@ export interface Scores {
 export interface AnalysisResult {
   title: string;
   body: string;
+  category?: string;
   scores: Scores;
   xp?: number;
 }
