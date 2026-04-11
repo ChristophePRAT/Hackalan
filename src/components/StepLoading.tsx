@@ -4,11 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { StepProps, AnalysisResult } from "../types";
 
-const STAGES = [
-    { label: "Personalization" },
-    { label: "Medical validation" },
-    { label: "Mo Voice" },
-];
+const STAGES = [{ label: "Personalization" }, { label: "Coaching" }];
 
 const MESSAGES = [
     "Reading your profile...",
@@ -47,13 +43,14 @@ export default function StepLoading({
 
         const run = async () => {
             try {
+                setStage(0);
                 const analysisRes = await fetch(
                     `/api/analyse_data?userId=${data.profileId || "a463e0bf26d790d6afdfda0cfd161cf5"}`,
                     { method: "GET" },
                 );
                 const analysis = await analysisRes.json();
-                updateProgress(25);
-                setStage(0);
+                updateProgress(53);
+                setStage(1);
 
                 const generateRes = await fetch("/api/generate", {
                     method: "POST",
