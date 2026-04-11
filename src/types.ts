@@ -16,9 +16,25 @@ export interface Scores {
   personalization: number;
 }
 
-export interface AnalysisResult {
+export interface ExplanationSection {
   title: string;
-  body: string;
+  paragraph: string;
+}
+
+export interface Objective {
+  title: string;
+  description: string;
+  category: string;
+  xp?: number;
+}
+
+export interface AnalysisResult {
+  // New structured format
+  explanation?: ExplanationSection[];
+  objectives?: Objective[];
+  // Legacy flat format (kept for compatibility)
+  title?: string;
+  body?: string;
   category?: string;
   scores: Scores;
   xp?: number;
