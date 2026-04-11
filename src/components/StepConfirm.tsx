@@ -17,12 +17,12 @@ export default function StepConfirm({ data, next, back }: Pick<StepProps, 'data'
   return (
     <div>
       <button onClick={back}
-        className="flex items-center gap-1.5 text-[0.8rem] font-medium text-[#B0B0BB] hover:text-[#111117] transition-colors mb-8">
+        className="flex items-center gap-1.5 text-[0.875rem] font-medium text-[#B0B0BB] hover:text-[#111117] transition-colors mb-8">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         Back
       </button>
 
-      <h2 className="text-[1.6rem] font-bold tracking-tight text-[#111117] mb-1.5">Ready to generate.</h2>
+      <h2 className="text-[1.9rem] font-bold tracking-tight text-[#111117] mb-1.5">Ready to generate.</h2>
       <p className="text-[0.9rem] text-[#8A8A95] leading-relaxed mb-7">
         Mo will create medically vetted content, designed specifically for you.
       </p>
