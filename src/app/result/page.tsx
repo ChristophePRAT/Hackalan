@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { AnalysisResult } from '../../types';
 import { CATEGORIES, XP_PER_LEVEL } from '../../constants';
@@ -53,6 +53,8 @@ function renderBody(body: string, accentColor: string) {
   })
 }
 
+type AudioState = 'idle' | 'loading' | 'ready' | 'error';
+
 export default function ResultPage() {
   const router = useRouter()
   const [result, setResult]       = useState<AnalysisResult | null>(null)
@@ -61,12 +63,40 @@ export default function ResultPage() {
   const [totalXp, setTotalXp]     = useState(0)
   const [levelUp, setLevelUp]     = useState(false)
 
+  const [audioState, setAudioState] = useState<AudioState>('idle')
+  const [audioUrl, setAudioUrl]     = useState<string | null>(null)
+  const [coachScript, setCoachScript] = useState<string | null>(null)
+  const audioFetched = useRef(false)
+
   useEffect(() => {
     const saved = localStorage.getItem('mo-result')
     if (saved) setResult(JSON.parse(saved))
     else router.push('/')
     setTotalXp(parseInt(localStorage.getItem('mo-total-xp') ?? '0', 10))
   }, [router])
+
+  useEffect(() => {
+    if (!result?.body || audioFetched.current) return
+    audioFetched.current = true
+    setAudioState('loading')
+
+    fetch('/api/audio-summary', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ generatedContent: result.body }),
+    })
+      .then(res => res.json())
+      .then(data => {
+        setCoachScript(data.script ?? null)
+        if (data.audioUrl) {
+          setAudioUrl(data.audioUrl)
+          setAudioState('ready')
+        } else {
+          setAudioState('error')
+        }
+      })
+      .catch(() => setAudioState('error'))
+  }, [result])
 
   const copy = () => {
     if (result?.body) { navigator.clipboard.writeText(result.body); setCopied(true); setTimeout(() => setCopied(false), 2200) }
@@ -138,6 +168,33 @@ export default function ResultPage() {
                 : <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>Copy content</>
               }
             </button>
+
+            {/* Audio Coach */}
+            <div className="rounded-2xl border p-6 mb-8 transition-all duration-300"
+              style={{ borderColor: audioState === 'ready' ? cat.color + '60' : '#E4E4E9', backgroundColor: audioState === 'ready' ? cat.bg : '#F7F7F9' }}>
+              <div className="flex items-center gap-2.5 mb-4">
+                <span className="text-lg">🎧</span>
+                <p className="font-bold text-base text-[#191919]">Listen to your challenges</p>
+              </div>
+              {audioState === 'loading' && (
+                <div className="flex items-center gap-3">
+                  <div className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin" style={{ borderColor: cat.color, borderTopColor: 'transparent' }} />
+                  <p className="text-sm text-[#6E6E73]">Generating your audio coach...</p>
+                </div>
+              )}
+              {audioState === 'ready' && audioUrl && (
+                <audio controls src={audioUrl} className="w-full rounded-lg" preload="auto" />
+              )}
+              {audioState === 'error' && coachScript && (
+                <div className="bg-white rounded-xl border border-[#E4E4E9] px-5 py-4">
+                  <p className="text-xs font-bold uppercase tracking-widest text-[#AFAFB8] mb-2">Your daily coach script</p>
+                  <p className="text-sm leading-relaxed text-[#191919]">{coachScript}</p>
+                </div>
+              )}
+              {audioState === 'error' && !coachScript && (
+                <p className="text-sm text-[#6E6E73]">Audio generation unavailable. Try again later.</p>
+              )}
+            </div>
 
             {/* Divider */}
             <div className="border-t border-[#E4E4E9] mb-8" />
