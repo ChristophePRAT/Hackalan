@@ -23,7 +23,11 @@ async function getEmbedding(text: string): Promise<number[]> {
     model: "mistral-embed",
     inputs: [text],
   });
-  return result.data[0].embedding;
+  const embedding = result.data[0]?.embedding;
+  if (!embedding) {
+    throw new Error("Failed to generate embedding");
+  }
+  return embedding;
 }
 
 async function main() {

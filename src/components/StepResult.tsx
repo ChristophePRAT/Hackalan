@@ -28,7 +28,7 @@ export default function StepResult({ result, restart }: Pick<StepProps, 'result'
           <h2 className="font-bold leading-snug text-[1.4rem]" style={{color: 'var(--color-alan-text)'}}>{result?.title}</h2>
         </div>
         <div className="px-8 py-8 text-[1rem] leading-relaxed" style={{color: 'var(--color-alan-text)'}}>
-          {result?.body.split('\n').map((line, i) => (
+          {result?.body && result.body.split('\n').map((line, i) => (
             <p key={i} className="mb-5 last:mb-0">{line}</p>
           ))}
         </div>

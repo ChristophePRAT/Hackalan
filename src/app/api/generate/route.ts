@@ -241,6 +241,10 @@ export async function POST(req: NextRequest) {
             responseFormat: ObjectivesResponse,
         });
 
+        if (!result.choices || !result.choices[0]) {
+            throw new Error("No response from Mistral API");
+        }
+
         const messageContent = result.choices[0].message?.content;
 
         // If content is a string, parse it as JSON
