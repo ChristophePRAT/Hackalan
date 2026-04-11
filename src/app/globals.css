@@ -1,13 +1,15 @@
 @import "tailwindcss";
 
+@source "../components/**/*.tsx";
+
 @theme {
   --color-alan-blue: #5C58F6;
   --color-alan-blue-hover: #4844D4;
   --color-alan-bg: #FFFFFF;
   --color-alan-text: #191919;
   --color-alan-text-light: #6E6E73;
-  --color-alan-card: #FDF7EF;
-  --color-alan-border: #E8E8ED;
+  --color-alan-card: #F7F7F9;
+  --color-alan-border: #E4E4E9;
   --font-sans: 'AlanSans', 'Inter', system-ui, sans-serif;
 }
 
@@ -25,7 +27,7 @@ html { font-size: 17px; }
 
 body {
   font-family: var(--font-sans);
-  background-color: var(--color-alan-bg);
+  background-color: #F4F4F6;
   color: var(--color-alan-text);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
@@ -33,7 +35,7 @@ body {
 }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(16px); }
+  from { opacity: 0; transform: translateY(12px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-.fade-up { animation: fadeUp 0.4s ease-out both; }
+.fade-up { animation: fadeUp 0.35s ease-out both; }
