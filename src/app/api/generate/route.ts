@@ -1,28 +1,99 @@
 import { Mistral } from "@mistralai/mistralai";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 
 export const maxDuration = 60;
 
 type Format = "article" | "meditation" | "video_script";
 
 interface UserProfile {
-  name?: string;
-  age?: number;
-  level?: "beginner" | "intermediate" | "advanced";
-  activeChallenge?: string;
-  streakDays?: number;
-  healthFocus?: string;
+    name?: string;
+    age?: number;
+    level?: "beginner" | "intermediate" | "advanced";
+    activeChallenge?: string;
+    streakDays?: number;
+    healthFocus?: string;
+}
+
+interface HealthAnalysis {
+    overallHealthScore?: {
+        totalScore: number;
+        category: string;
+        componentScores?: {
+            sleep: number;
+            activity: number;
+            cardiovascular: number;
+        };
+        summary?: {
+            status: string;
+            primaryInsight: string;
+            volatilityIndex: number;
+            consistencyIndex: number;
+        };
+    };
+    sleepAnalysis?: {
+        averages: {
+            totalSleepMinutes: number;
+            efficiencyPercentage: number;
+            remPercentage?: number;
+            deepPercentage?: number;
+        };
+        qualityScore?: number;
+        consistencyScore?: number;
+    };
+    activityAnalysis?: {
+        steps?: { mean: number };
+        calories?: { mean: number };
+        activeMinutes?: { mean: number };
+        activityScore?: number;
+        intensityScore?: number;
+    };
+    cardiovascularAnalysis?: {
+        restingHR?: { mean: number };
+        hrVariability?: { mean: number };
+        cardiovascularScore?: number;
+    };
 }
 
 interface GenerateRequest {
-  topic: string;
-  format: Format;
-  userProfile?: UserProfile;
+    topic: string;
+    format: Format;
+    userProfile?: UserProfile;
+    analysis?: HealthAnalysis;
 }
 
+const categories = z.literal([
+    "Mental well-being",
+    "Sleep",
+    "Sport & physical activity",
+    "Nutrition",
+    "Breathing & relaxation",
+    "Digital detox",
+    "Habits & addictions",
+    "Productivity & organization",
+    "Relationships & social life",
+    "Personal development",
+]);
+
+const ObjectivesResponse = z.array(
+    z.object({
+        explanation: z.object({
+            title: z.string(),
+            paragraph: z.string(),
+        }),
+        objectives: z.array(
+            z.object({
+                title: z.string(),
+                description: z.string(),
+                category: z.string(),
+            }),
+        ),
+    }),
+);
+
 const FORMAT_INSTRUCTIONS: Record<Format, string> = {
-  article:
-    `Rédige un article santé en français comme un coach santé bienveillant qui parle directement au membre.
+    article: `
+    Rédige un article santé en français comme un coach santé bienveillant qui parle directement au membre.
 Règles :
 - Tutoie le membre, utilise son prénom naturellement (pas à chaque phrase)
 - Commence par une accroche liée à son vécu (son challenge en cours, son streak, son objectif)
@@ -31,10 +102,10 @@ Règles :
 - Chaque section doit contenir au moins un "micro-défi" que le membre peut appliquer ce soir
 - Termine par un plan d'action en 3 étapes simples pour les prochaines 24h
 - Ton : comme un ami médecin qui t'explique les choses simplement, jamais condescendant
-- Longueur : 800-1200 mots`,
+- Longueur : 800-1200 mots
+`,
 
-  meditation:
-    `Écris un script de méditation guidée en français, prêt à être lu à voix haute par une voix IA.
+    meditation: `Écris un script de méditation guidée en français, prêt à être lu à voix haute par une voix IA.
 Règles :
 - Durée de lecture : 5-7 minutes
 - Commence par un ancrage dans le moment présent lié au contexte du membre (sa journée, son challenge)
@@ -45,8 +116,7 @@ Règles :
 - Tutoie le membre, glisse son prénom 2-3 fois maximum
 - Jamais d'impératif brutal, préfère "tu peux", "je t'invite à", "laisse"`,
 
-  video_script:
-    `Écris un scénario de vidéo courte santé en français (60-90 secondes).
+    video_script: `Écris un scénario de vidéo courte santé en français (60-90 secondes).
 Règles :
 - Accroche dans les 3 premières secondes : une stat choc ou une question provocante liée au vécu du membre
 - Structure : hook (5s) → problème que le membre vit concrètement (15s) → explication scientifique vulgarisée en 1 phrase (10s) → 3 actions concrètes à faire aujourd'hui (30s) → call-to-action motivant lié à son challenge (10s)
@@ -58,111 +128,126 @@ Règles :
 };
 
 function buildSystemPrompt(format: Format): string {
-  return `Tu es un expert en contenu santé numérique pour l'application Mo Studios, une plateforme de bien-être personnalisée. ${FORMAT_INSTRUCTIONS[format]}`;
+    return `Tu es un expert en contenu santé numérique pour l'application Mo Studios, une plateforme de bien-être personnalisée. ${FORMAT_INSTRUCTIONS[format]}. Les catégories de santé à utiliser pour classer les objectifs sont : Mental well-being, Sleep, Sport & physical activity, Nutrition, Breathing & relaxation, Digital detox, Habits & addictions, Productivity & organization, Relationships & social life, Personal development. Ne génère que du contenu en français.`;
 }
 
 function buildUserPrompt(
-  topic: string,
-  format: Format,
-  userProfile?: UserProfile
+    topic: string,
+    format: Format,
+    userProfile?: UserProfile,
+    analysis?: HealthAnalysis,
 ): string {
-  const formatLabel: Record<Format, string> = {
-    article: "article",
-    meditation: "méditation guidée",
-    video_script: "script vidéo",
-  };
+    const formatLabel: Record<Format, string> = {
+        article: "article",
+        meditation: "méditation guidée",
+        video_script: "script vidéo",
+    };
 
-  let prompt = `Génère un ${formatLabel[format]} sur le thème : "${topic}".`;
+    let prompt = `Génère un ${formatLabel[format]} sur le thème : "${topic}".`;
 
-  if (userProfile) {
-    const profileParts: string[] = [];
-    if (userProfile.name) profileParts.push(`Prénom : ${userProfile.name}`);
-    if (userProfile.age) profileParts.push(`Âge : ${userProfile.age} ans`);
-    if (userProfile.level) {
-      const levelLabel = {
-        beginner: "débutant",
-        intermediate: "intermédiaire",
-        advanced: "avancé",
-      }[userProfile.level];
-      profileParts.push(`Niveau : ${levelLabel}`);
+    if (userProfile) {
+        const profileParts: string[] = [];
+        if (userProfile.name) profileParts.push(`Prénom : ${userProfile.name}`);
+        if (userProfile.age) profileParts.push(`Âge : ${userProfile.age} ans`);
+        if (userProfile.level) {
+            const levelLabel = {
+                beginner: "débutant",
+                intermediate: "intermédiaire",
+                advanced: "avancé",
+            }[userProfile.level];
+            profileParts.push(`Niveau : ${levelLabel}`);
+        }
+        if (userProfile.activeChallenge)
+            profileParts.push(
+                `Challenge en cours : "${userProfile.activeChallenge}"`,
+            );
+        if (userProfile.streakDays !== undefined)
+            profileParts.push(
+                `Streak actuel : ${userProfile.streakDays} jours consécutifs`,
+            );
+        if (userProfile.healthFocus)
+            profileParts.push(`Focus santé : ${userProfile.healthFocus}`);
+
+        if (profileParts.length > 0) {
+            prompt += `\n\nProfil de l'utilisateur :\n${profileParts.join("\n")}\n\nPersonnalise le contenu en tenant compte de ce profil : adapte le vocabulaire au niveau, mentionne le challenge en cours si pertinent, et encourage la progression du streak.`;
+        }
     }
-    if (userProfile.activeChallenge)
-      profileParts.push(`Challenge en cours : "${userProfile.activeChallenge}"`);
-    if (userProfile.streakDays !== undefined)
-      profileParts.push(`Streak actuel : ${userProfile.streakDays} jours consécutifs`);
-    if (userProfile.healthFocus)
-      profileParts.push(`Focus santé : ${userProfile.healthFocus}`);
 
-    if (profileParts.length > 0) {
-      prompt += `\n\nProfil de l'utilisateur :\n${profileParts.join("\n")}\n\nPersonnalise le contenu en tenant compte de ce profil : adapte le vocabulaire au niveau, mentionne le challenge en cours si pertinent, et encourage la progression du streak.`;
+    if (analysis) {
+        prompt += `\n\nDonnées de santé détaillées de l'utilisateur (JSON) :\n${JSON.stringify(analysis, null, 2)}\n\nGénère des objectifs qui s'appuient complètement sur ces données de santé spécifiques. Analyse chaque métrique en détail et crée des recommandations hautement personnalisées basées sur tous les paramètres fournis (sommmeil, activité, santé cardiovasculaire, scores, etc.).`;
     }
-  }
 
-  return prompt;
+    return prompt;
 }
 
 const mistral = new Mistral({
-  apiKey: process.env.MISTRAL_API_KEY!,
-  timeoutMs: 120000,
+    apiKey: process.env.MISTRAL_API_KEY!,
+    timeoutMs: 120000,
 });
 
 export async function POST(req: NextRequest) {
-  if (!process.env.MISTRAL_API_KEY) {
-    return NextResponse.json(
-      { error: "MISTRAL_API_KEY is not configured" },
-      { status: 500 }
-    );
-  }
+    if (!process.env.MISTRAL_API_KEY) {
+        return NextResponse.json(
+            { error: "MISTRAL_API_KEY is not configured" },
+            { status: 500 },
+        );
+    }
 
-  let body: GenerateRequest;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Invalid JSON body" }, { status: 400 });
-  }
+    let body: GenerateRequest;
+    try {
+        body = await req.json();
+    } catch {
+        return NextResponse.json(
+            { error: "Invalid JSON body" },
+            { status: 400 },
+        );
+    }
 
-  const { topic, format, userProfile } = body;
+    const { topic, format, userProfile, analysis } = body;
 
-  if (!topic || typeof topic !== "string" || topic.trim() === "") {
-    return NextResponse.json(
-      { error: "Missing or invalid field: topic (string required)" },
-      { status: 400 }
-    );
-  }
+    if (!topic || typeof topic !== "string" || topic.trim() === "") {
+        return NextResponse.json(
+            { error: "Missing or invalid field: topic (string required)" },
+            { status: 400 },
+        );
+    }
 
-  const validFormats: Format[] = ["article", "meditation", "video_script"];
-  if (!format || !validFormats.includes(format)) {
-    return NextResponse.json(
-      {
-        error: `Missing or invalid field: format must be one of ${validFormats.join(", ")}`,
-      },
-      { status: 400 }
-    );
-  }
+    const validFormats: Format[] = ["article", "meditation", "video_script"];
+    if (!format || !validFormats.includes(format)) {
+        return NextResponse.json(
+            {
+                error: `Missing or invalid field: format must be one of ${validFormats.join(", ")}`,
+            },
+            { status: 400 },
+        );
+    }
 
-  try {
-    const result = await mistral.chat.complete({
-      model: "mistral-large-latest",
-      messages: [
-        { role: "system", content: buildSystemPrompt(format) },
-        { role: "user", content: buildUserPrompt(topic, format, userProfile) },
-      ],
-      maxTokens: 2000,
-    });
+    try {
+        const result = await mistral.chat.parse({
+            model: "mistral-large-latest",
+            messages: [
+                { role: "system", content: buildSystemPrompt(format) },
+                {
+                    role: "user",
+                    content: buildUserPrompt(
+                        topic,
+                        format,
+                        userProfile,
+                        analysis,
+                    ),
+                },
+            ],
+            maxTokens: 5000,
+            responseFormat: ObjectivesResponse,
+        });
 
-    const content = result.choices?.[0]?.message?.content ?? "";
-
-    return NextResponse.json({
-      content,
-      topic,
-      format,
-      model: "mistral-large-latest",
-    });
-  } catch (err) {
-    console.error("[/api/generate] Mistral error:", err);
-    return NextResponse.json(
-      { error: "Failed to generate content", details: String(err) },
-      { status: 500 }
-    );
-  }
+        return NextResponse.json(result);
+    } catch (err) {
+        console.error("[/api/generate] Mistral error:", err);
+        console.error("Request body was:", body);
+        return NextResponse.json(
+            { error: "Failed to generate content", details: String(err) },
+            { status: 500 },
+        );
+    }
 }

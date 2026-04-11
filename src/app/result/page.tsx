@@ -35,8 +35,18 @@ export default function ResultPage() {
   }, [router])
 
   const copy = () => {
-    if (typeof window !== 'undefined' && result?.body) {
-      navigator.clipboard.writeText(result.body)
+    if (typeof window !== 'undefined' && result?.sections) {
+      let text = ''
+      result.sections.forEach(section => {
+        text += `${section.explanation.title}\n`
+        text += `${section.explanation.paragraph}\n\n`
+        if (section.objectives.length > 0) {
+          section.objectives.forEach(obj => {
+            text += `• ${obj.title}\n${obj.description}\n\n`
+          })
+        }
+      })
+      navigator.clipboard.writeText(text)
       setCopied(true)
       setTimeout(() => setCopied(false), 2200)
     }
@@ -95,38 +105,32 @@ export default function ResultPage() {
           {/* Content card */}
           <div className="rounded-[20px] border-2 overflow-hidden mb-8"
             style={{ borderColor: cat.color + '40', backgroundColor: '#FAFAFA' }}>
-            <div className="px-8 pt-8 pb-6" style={{ borderBottom: '1px solid var(--color-alan-border)', backgroundColor: cat.bg + 'CC' }}>
-              <h2 className="font-bold leading-snug text-[1.5rem]" style={{color: 'var(--color-alan-text)'}}>{result.title}</h2>
-            </div>
-            <div className="px-8 py-8 text-[1rem] leading-relaxed" style={{color: 'var(--color-alan-text)'}}>
-              {result.body.split('\n').map((line, i) => {
-                if (line.startsWith('# '))  return <h1 key={i} className="text-2xl font-bold mb-5 mt-7 first:mt-0">{line.slice(2)}</h1>
-                if (line.startsWith('## ')) return <h2 key={i} className="text-xl font-bold mb-4 mt-6 first:mt-0">{line.slice(3)}</h2>
-                if (line.startsWith('### '))return <h3 key={i} className="text-lg font-bold mb-3 mt-5 first:mt-0">{line.slice(4)}</h3>
-                if (line.trim().startsWith('- ') || line.trim().startsWith('* ')) {
-                  const parts = line.trim().slice(2).split(/(\*\*.*?\*\*)/g)
-                  return (
-                    <div key={i} className="flex gap-3 mb-3 ml-2">
-                      <span className="shrink-0 mt-2 w-1.5 h-1.5 rounded-full" style={{backgroundColor: cat.color}} />
-                      <p>{parts.map((p, j) => p.startsWith('**') && p.endsWith('**') ? <strong key={j}>{p.slice(2,-2)}</strong> : p)}</p>
+            {result.sections.map((section, sIdx) => (
+              <div key={sIdx}>
+                <div className="px-8 pt-8 pb-6" style={{ borderBottom: sIdx < result.sections.length - 1 ? '1px solid var(--color-alan-border)' : 'none', backgroundColor: sIdx === 0 ? cat.bg + 'CC' : '#FAFAFA' }}>
+                  <h2 className="font-bold leading-snug text-[1.5rem]" style={{color: 'var(--color-alan-text)'}}>{section.explanation.title}</h2>
+                </div>
+                <div className="px-8 py-8 text-[1rem] leading-relaxed" style={{color: 'var(--color-alan-text)'}}>
+                  <p className="mb-6">{section.explanation.paragraph}</p>
+                  {section.objectives.length > 0 && (
+                    <div>
+                      <h3 className="font-bold text-lg mb-4" style={{color: 'var(--color-alan-text)'}}>Objectives</h3>
+                      <div className="space-y-4">
+                        {section.objectives.map((obj, oIdx) => (
+                          <div key={oIdx} className="flex gap-3">
+                            <span className="shrink-0 mt-1 w-1.5 h-1.5 rounded-full" style={{backgroundColor: cat.color}} />
+                            <div className="flex-1">
+                              <p className="font-semibold mb-1">{obj.title}</p>
+                              <p className="text-sm">{obj.description}</p>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
-                  )
-                }
-                const num = line.trim().match(/^(\d+)\.\s+(.*)/)
-                if (num) {
-                  const parts = num[2].split(/(\*\*.*?\*\*)/g)
-                  return (
-                    <div key={i} className="flex gap-3 mb-3 ml-2">
-                      <span className="shrink-0 font-bold" style={{color: cat.color}}>{num[1]}.</span>
-                      <p>{parts.map((p, j) => p.startsWith('**') && p.endsWith('**') ? <strong key={j}>{p.slice(2,-2)}</strong> : p)}</p>
-                    </div>
-                  )
-                }
-                if (line.trim() === '') return <div key={i} className="h-4" />
-                const parts = line.split(/(\*\*.*?\*\*)/g)
-                return <p key={i} className="mb-4 last:mb-0">{parts.map((p, j) => p.startsWith('**') && p.endsWith('**') ? <strong key={j}>{p.slice(2,-2)}</strong> : p)}</p>
-              })}
-            </div>
+                  )}
+                </div>
+              </div>
+            ))}
             <div className="px-8 pb-8">
               <button onClick={copy}
                 className="w-full py-4 rounded-2xl border-2 font-semibold text-base transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
