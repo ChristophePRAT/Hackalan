@@ -1,0 +1,32 @@
+Please use the below credentials as auth headers while making the API request.
+
+WebAuth
+
+user: aihackxalan-api
+password: XmgFAj3OwHEErG4s
+
+
+AppAuth
+
+AuthId: dDccECwGgWbklgwz
+AuthSecret: TGmmgBMk8N4Rl3zsZcfAbaFVauEJ77nOs0VBYi9z7ZjQVvl9JB0qVjZMBn6zHjp7
+
+
+--------------
+Optionally, you can also use our Thryve Dashboard to see the data available for each users under Analyse User Data Section:
+Link: https://dashboard.qa.thryve.de/
+
+Email: hackathon.thryve@outlook.com
+Password: 11AlaNxThRyVe0426
+
+----------------
+Incase of any queries feel free to contact Friedrich/Amith on-site or via Discord
+
+
++~~~~~~~~~~~~~~~~+
+| Manually added |
++~~~~~~~~~~~~~~~~+
+
+Authorization: Basic YWloYWNreGFsYW4tYXBpOlhtZ0ZBajNPd0hFRXJHNHM=
+AppAuthorization: Basic ZERjY0VDd0dnV2JrbGd3ejpUR21tZ0JNazhONFJsM3pzWmNmQWJhRlZhdUVKNzduT3MwVkJZaTl6N1pqUVZ2bDlKQjBxVmpaTUJuNnpIanA3
+endUserId : b908eec2e6def72d5302618e4335d15c
