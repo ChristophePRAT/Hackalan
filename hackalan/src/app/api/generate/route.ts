@@ -1,6 +1,8 @@
 import { Mistral } from "@mistralai/mistralai";
 import { NextRequest, NextResponse } from "next/server";
 
+export const maxDuration = 60;
+
 type Format = "article" | "meditation" | "video_script";
 
 interface UserProfile {
@@ -20,11 +22,39 @@ interface GenerateRequest {
 
 const FORMAT_INSTRUCTIONS: Record<Format, string> = {
   article:
-    "Rédige un article santé structuré en français : une introduction accrocheuse, 3-4 sections avec sous-titres, et une conclusion avec un appel à l'action. Utilise un ton bienveillant et scientifiquement fondé.",
+    `Rédige un article santé en français comme un coach santé bienveillant qui parle directement au membre.
+Règles :
+- Tutoie le membre, utilise son prénom naturellement (pas à chaque phrase)
+- Commence par une accroche liée à son vécu (son challenge en cours, son streak, son objectif)
+- 3-4 sections avec des conseils ultra concrets et actionnables (pas de généralités vagues)
+- Intègre des données chiffrées issues d'études scientifiques pour crédibiliser
+- Chaque section doit contenir au moins un "micro-défi" que le membre peut appliquer ce soir
+- Termine par un plan d'action en 3 étapes simples pour les prochaines 24h
+- Ton : comme un ami médecin qui t'explique les choses simplement, jamais condescendant
+- Longueur : 800-1200 mots`,
+
   meditation:
-    "Écris un script de méditation guidée en français, à lire à voix haute. Inclus : une phase d'ancrage (respiration), une visualisation, et un retour en douceur. Ton calme, voix à la deuxième personne du singulier.",
+    `Écris un script de méditation guidée en français, prêt à être lu à voix haute par une voix IA.
+Règles :
+- Durée de lecture : 5-7 minutes
+- Commence par un ancrage dans le moment présent lié au contexte du membre (sa journée, son challenge)
+- Structure : accueil (30s) → respiration guidée avec comptage précis (1min) → body scan ciblé (1min30) → visualisation immersive liée au thème santé (2min) → intention positive personnalisée (30s) → retour doux (30s)
+- Indique les pauses avec [PAUSE 3s], [PAUSE 5s], [PAUSE 10s]
+- Utilise des métaphores sensorielles (lumière, chaleur, vagues, souffle)
+- Ton : voix douce, phrases courtes, rythme lent
+- Tutoie le membre, glisse son prénom 2-3 fois maximum
+- Jamais d'impératif brutal, préfère "tu peux", "je t'invite à", "laisse"`,
+
   video_script:
-    "Écris un scénario de vidéo courte (60-90 secondes) en français. Format : accroche percutante, 3 points clés, call-to-action final. Indique les coupures visuelles avec [COUPE]. Ton dynamique et accessible.",
+    `Écris un scénario de vidéo courte santé en français (60-90 secondes).
+Règles :
+- Accroche dans les 3 premières secondes : une stat choc ou une question provocante liée au vécu du membre
+- Structure : hook (5s) → problème que le membre vit concrètement (15s) → explication scientifique vulgarisée en 1 phrase (10s) → 3 actions concrètes à faire aujourd'hui (30s) → call-to-action motivant lié à son challenge (10s)
+- Indique les changements visuels avec [VISUEL : description]
+- Indique le ton avec [TON : énergique/posé/complice]
+- Écris comme un créateur TikTok santé : direct, punchy, zéro jargon
+- Chaque phrase = 1 idée max
+- Termine sur une phrase mémorable que le membre a envie de partager`,
 };
 
 function buildSystemPrompt(format: Format): string {
@@ -72,7 +102,8 @@ function buildUserPrompt(
 }
 
 const mistral = new Mistral({
-  apiKey: process.env.MISTRAL_API_KEY ?? "",
+  apiKey: process.env.MISTRAL_API_KEY!,
+  timeoutMs: 120000,
 });
 
 export async function POST(req: NextRequest) {
@@ -116,6 +147,7 @@ export async function POST(req: NextRequest) {
         { role: "system", content: buildSystemPrompt(format) },
         { role: "user", content: buildUserPrompt(topic, format, userProfile) },
       ],
+      maxTokens: 2000,
     });
 
     const content = result.choices?.[0]?.message?.content ?? "";
