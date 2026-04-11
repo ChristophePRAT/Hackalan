@@ -208,43 +208,145 @@ export default function StepLoading({
 
             {/* Fun Analysis Preview */}
             {analysisData?.overallHealthScore && (
-                <div className="w-full max-w-sm mb-12 p-6 rounded-2xl border border-[#EBEBEF] bg-gradient-to-br from-[#F5F4FF] to-white">
-                    <p className="text-xs uppercase tracking-widest font-bold text-[#8A8A95] mb-3">
-                        Early peek at your analysis
-                    </p>
-                    <div className="mb-5">
-                        <div className="flex items-baseline gap-2 mb-2">
-                            <span className="text-4xl font-extrabold text-[#5C58F6]">
-                                {analysisData.overallHealthScore.totalScore}
-                            </span>
-                            <span className="text-sm font-bold text-[#8A8A95]">
-                                / 100
-                            </span>
-                        </div>
-                        <p className="text-sm text-[#6E6E73] font-medium">
-                            {analysisData.overallHealthScore.summary?.status || "Loading your score..."}
+                <div className="w-full max-w-2xl mb-12">
+                    {/* Main Score Card */}
+                    <div className="p-6 rounded-2xl border border-[#EBEBEF] bg-gradient-to-br from-[#F5F4FF] to-white mb-4">
+                        <p className="text-xs uppercase tracking-widest font-bold text-[#8A8A95] mb-3">
+                            Early peek at your analysis
                         </p>
-                    </div>
-
-                    {analysisData.overallHealthScore.componentScores && (
-                        <div className="grid grid-cols-3 gap-2">
-                            {Object.entries(
-                                analysisData.overallHealthScore.componentScores
-                            ).map(([key, value]: [string, any]) => (
-                                <div
-                                    key={key}
-                                    className="p-2 rounded-lg bg-white border border-[#EBEBEF] text-center hover:border-[#5C58F6] hover:bg-[#F5F4FF] transition-all cursor-pointer"
-                                >
-                                    <p className="text-xs font-bold text-[#8A8A95] uppercase tracking-wide mb-1">
-                                        {key}
+                        <div className="flex items-start justify-between">
+                            <div>
+                                <div className="flex items-baseline gap-2 mb-2">
+                                    <span className="text-4xl font-extrabold text-[#5C58F6]">
+                                        {analysisData.overallHealthScore.totalScore}
+                                    </span>
+                                    <span className="text-sm font-bold text-[#8A8A95]">
+                                        / 100
+                                    </span>
+                                </div>
+                                <p className="text-sm text-[#6E6E73] font-medium">
+                                    {analysisData.overallHealthScore.category || "Analyzing your health..."}
+                                </p>
+                            </div>
+                            {analysisData.dataPoints && (
+                                <div className="text-right">
+                                    <p className="text-xs text-[#8A8A95] font-bold uppercase tracking-wide">
+                                        Data Points
                                     </p>
-                                    <p className="text-lg font-bold text-[#111117]">
-                                        {value}
+                                    <p className="text-2xl font-bold text-[#5C58F6]">
+                                        {analysisData.dataPoints}
                                     </p>
                                 </div>
-                            ))}
+                            )}
                         </div>
-                    )}
+
+                        {analysisData.overallHealthScore.componentScores && (
+                            <div className="grid grid-cols-3 gap-2 mt-4">
+                                {Object.entries(
+                                    analysisData.overallHealthScore.componentScores
+                                ).map(([key, value]: [string, any]) => (
+                                    <div
+                                        key={key}
+                                        className="p-2 rounded-lg bg-white border border-[#EBEBEF] text-center hover:border-[#5C58F6] hover:bg-[#F5F4FF] transition-all cursor-pointer"
+                                    >
+                                        <p className="text-xs font-bold text-[#8A8A95] uppercase tracking-wide mb-1">
+                                            {key.replace(/([A-Z])/g, ' $1').trim()}
+                                        </p>
+                                        <p className="text-lg font-bold text-[#111117]">
+                                            {value}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Key Metrics Grid */}
+                    <div className="grid grid-cols-2 gap-3">
+                        {/* Sleep Metrics */}
+                        {analysisData.sleepAnalysis?.duration && (
+                            <div className="p-4 rounded-xl bg-white border border-[#EBEBEF] hover:border-[#5C58F6] transition-colors">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-lg">😴</span>
+                                    <p className="text-xs font-bold text-[#8A8A95] uppercase tracking-wide">
+                                        Sleep
+                                    </p>
+                                </div>
+                                <p className="text-sm font-bold text-[#111117] mb-1">
+                                    {analysisData.sleepAnalysis.duration.mean.toFixed(1)}h avg
+                                </p>
+                                <p className="text-xs text-[#8A8A95]">
+                                    Range: {analysisData.sleepAnalysis.duration.min.toFixed(1)}h - {analysisData.sleepAnalysis.duration.max.toFixed(1)}h
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Activity Metrics */}
+                        {analysisData.activityAnalysis?.steps && (
+                            <div className="p-4 rounded-xl bg-white border border-[#EBEBEF] hover:border-[#5C58F6] transition-colors">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-lg">👟</span>
+                                    <p className="text-xs font-bold text-[#8A8A95] uppercase tracking-wide">
+                                        Steps
+                                    </p>
+                                </div>
+                                <p className="text-sm font-bold text-[#111117] mb-1">
+                                    {Math.round(analysisData.activityAnalysis.steps.mean).toLocaleString()}
+                                </p>
+                                <p className="text-xs text-[#8A8A95]">
+                                    Daily average
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Heart Rate Metrics */}
+                        {analysisData.cardiovascularAnalysis?.restingHR && (
+                            <div className="p-4 rounded-xl bg-white border border-[#EBEBEF] hover:border-[#5C58F6] transition-colors">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-lg">❤️</span>
+                                    <p className="text-xs font-bold text-[#8A8A95] uppercase tracking-wide">
+                                        Heart Rate
+                                    </p>
+                                </div>
+                                <p className="text-sm font-bold text-[#111117] mb-1">
+                                    {Math.round(analysisData.cardiovascularAnalysis.restingHR.mean)} bpm
+                                </p>
+                                <p className="text-xs text-[#8A8A95]">
+                                    Resting
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Calories Metrics */}
+                        {analysisData.activityAnalysis?.activeCalories && (
+                            <div className="p-4 rounded-xl bg-white border border-[#EBEBEF] hover:border-[#5C58F6] transition-colors">
+                                <div className="flex items-center gap-2 mb-2">
+                                    <span className="text-lg">🔥</span>
+                                    <p className="text-xs font-bold text-[#8A8A95] uppercase tracking-wide">
+                                        Active Cal
+                                    </p>
+                                </div>
+                                <p className="text-sm font-bold text-[#111117] mb-1">
+                                    {Math.round(analysisData.activityAnalysis.activeCalories.mean)}
+                                </p>
+                                <p className="text-xs text-[#8A8A95]">
+                                    Per day
+                                </p>
+                            </div>
+                        )}
+
+                        {/* Analysis Period */}
+                        {analysisData.period && (
+                            <div className="p-4 rounded-xl bg-white border border-[#EBEBEF] hover:border-[#5C58F6] transition-colors col-span-2">
+                                <p className="text-xs font-bold text-[#8A8A95] uppercase tracking-wide mb-2">
+                                    Analysis Period
+                                </p>
+                                <p className="text-sm font-bold text-[#111117]">
+                                    {analysisData.period}
+                                </p>
+                            </div>
+                        )}
+                    </div>
                 </div>
             )}
 
