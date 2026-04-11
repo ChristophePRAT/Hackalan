@@ -16,6 +16,7 @@ interface ClaimVerification {
   confidence: number;
   explanation: string;
   source: string;
+  suggestedCorrection?: string;
 }
 
 async function extractClaims(content: string): Promise<string[]> {
@@ -84,21 +85,23 @@ Réponds UNIQUEMENT avec un JSON :
   "status": "verified" | "unverified" | "incorrect",
   "confidence": <nombre entre 0 et 100>,
   "explanation": "<explication concise en français>",
-  "source": "<nom de la source principale utilisée>"
+  "source": "<nom de la source principale utilisée>",
+  "suggestedCorrection": "<si status=incorrect : reformulation factuelle correcte basée sur les sources, sinon null>"
 }
 
 Règles :
 - "verified" : l'affirmation est clairement soutenue par au moins une source
-- "incorrect" : l'affirmation contredit les sources
+- "incorrect" : l'affirmation contredit les sources — dans ce cas, propose une correction factuelle précise dans "suggestedCorrection"
 - "unverified" : les sources ne permettent ni de confirmer ni d'infirmer
-- La confidence reflète à quel point les sources sont claires et directes`,
+- La confidence reflète à quel point les sources sont claires et directes
+- "suggestedCorrection" doit être null si le status n'est pas "incorrect"`,
       },
       {
         role: "user",
         content: `Affirmation à vérifier : "${claim}"\n\nSources disponibles :\n${sourcesText}`,
       },
     ],
-    maxTokens: 500,
+    maxTokens: 600,
     responseFormat: { type: "json_object" },
   });
 
@@ -107,13 +110,17 @@ Règles :
 
   try {
     const parsed = JSON.parse(rawStr);
-    return {
+    const verification: ClaimVerification = {
       claim,
       status: parsed.status ?? "unverified",
       confidence: parsed.confidence ?? 0,
       explanation: parsed.explanation ?? "",
       source: parsed.source ?? "",
     };
+    if (parsed.status === "incorrect" && parsed.suggestedCorrection) {
+      verification.suggestedCorrection = parsed.suggestedCorrection;
+    }
+    return verification;
   } catch {
     return {
       claim,
@@ -197,11 +204,32 @@ export async function POST(req: NextRequest) {
     const verifiedClaims = details.filter((d) => d.status === "verified").length;
     const score = Math.round((verifiedClaims / details.length) * 100);
 
+    let disclaimer: string;
+    if (score < 50) {
+      disclaimer =
+        "⚠️ ATTENTION : Ce contenu n'a pas pu être suffisamment vérifié par des sources médicales fiables. Il ne doit pas être publié en l'état. Une revue par un professionnel de santé est obligatoire.";
+    } else if (score < 80) {
+      disclaimer =
+        "⚠️ Certaines affirmations de ce contenu n'ont pas pu être vérifiées. Une relecture médicale est recommandée avant publication.";
+    } else {
+      disclaimer =
+        "✅ Ce contenu est largement soutenu par des sources médicales fiables. Une relecture finale reste recommandée.";
+    }
+
+    const incorrectClaims = details
+      .filter((d) => d.status === "incorrect")
+      .map((d) => ({
+        claim: d.claim,
+        suggestedCorrection: d.suggestedCorrection ?? null,
+      }));
+
     return NextResponse.json({
       score,
+      disclaimer,
       totalClaims: details.length,
       verifiedClaims,
       details,
+      incorrectClaims,
     });
   } catch (err) {
     console.error("[/api/rag/verify] Error:", err);
