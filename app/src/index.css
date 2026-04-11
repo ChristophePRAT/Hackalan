@@ -13,8 +13,8 @@
 
 @font-face {
   font-family: 'AlanSans';
-  src: local('AlanSans'), local('Helvetica Neue'), local('Arial');
-  font-weight: normal;
+  src: url('./assets/fonts/AlanSans-VariableFont_wght.ttf') format('truetype');
+  font-weight: 100 900;
   font-style: normal;
   font-display: swap;
 }
