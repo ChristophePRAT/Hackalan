@@ -40,14 +40,8 @@ export default function Home() {
 
         {/* Brand */}
         <header className="mb-16 fade-up text-center">
-          <div className="inline-flex items-center justify-center gap-3 mb-6">
-            <svg width="46" height="46" viewBox="0 0 100 100" fill="var(--color-alan-blue)" xmlns="http://www.w3.org/2000/svg">
-              <path d="M 28 36 C 18 36 12 30 12 24 C 12 14 20 8 28 8 C 36 8 40 16 35 26 C 33 30 30 36 28 36 Z" />
-              <path d="M 72 36 C 82 36 88 30 88 24 C 88 14 80 8 72 8 C 64 8 60 16 65 26 C 67 30 70 36 72 36 Z" />
-              <ellipse cx="50" cy="35" rx="26" ry="18" />
-              <path d="M 32 60 C 32 80, 68 80, 68 60 C 68 70, 32 70, 32 60 Z" />
-            </svg>
-            <span className="font-extrabold text-[1.6rem] tracking-tight leading-none pt-2" style={{color: 'var(--color-alan-text)'}}>Mo Studios</span>
+          <div className="inline-flex items-center justify-center mb-6">
+            <img src="/alan-logo.png" alt="Alan Logo" className="h-16 w-auto" />
           </div>
           <h1 className="font-semibold leading-tight text-[2.75rem] mb-4" style={{color: 'var(--color-alan-text)'}}>
             Your health content,<br/>designed for you.
