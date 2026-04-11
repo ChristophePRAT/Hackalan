@@ -1,3 +1,15 @@
-// Wrapper autour de l'API Mistral Embeddings (modèle mistral-embed).
-// Expose une fonction embedText(text: string): Promise<number[]> qui retourne
-// le vecteur d'embedding d'un texte donné, utilisé pour l'ingestion et la recherche vectorielle.
+import { Mistral } from "@mistralai/mistralai";
+
+const mistral = new Mistral({
+  apiKey: process.env.MISTRAL_API_KEY!,
+  timeoutMs: 120000,
+});
+
+export async function getEmbedding(text: string): Promise<number[]> {
+  const result = await mistral.embeddings.create({
+    model: "mistral-embed",
+    inputs: [text],
+  });
+
+  return result.data[0].embedding as number[];
+}
