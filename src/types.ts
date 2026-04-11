@@ -32,6 +32,7 @@ export interface AnalysisResult {
   // New structured format
   explanation?: ExplanationSection[];
   objectives?: Objective[];
+  voiceScript?: string;
   // Legacy flat format (kept for compatibility)
   title?: string;
   body?: string;

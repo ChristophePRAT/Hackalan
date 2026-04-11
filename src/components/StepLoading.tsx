@@ -82,6 +82,7 @@ export default function StepLoading({
                 return {
                     explanation: generated.explanation || [],
                     objectives: generated.objectives || [],
+                    voiceScript: generated.voiceScript,
                     category,
                     scores: {
                         medical: analysis.overallHealthScore?.totalScore || 92,
@@ -101,6 +102,7 @@ export default function StepLoading({
                         },
                     ],
                     objectives: [],
+                    voiceScript: undefined,
                     category: undefined,
                     scores: { medical: 0, brand: 0, personalization: 0 },
                     xp: 0,

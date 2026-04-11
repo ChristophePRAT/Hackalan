@@ -89,6 +89,7 @@ const ObjectivesResponse = z.object({
             category: z.string(),
         }),
     ),
+    voiceScript: z.string(),
 });
 
 const FORMAT_INSTRUCTIONS: Record<Format, string> = {
@@ -103,6 +104,7 @@ Rules:
 - End with a simple 3-step action plan for the next 24 hours
 - Tone: like a friend and doctor explaining things simply, never condescending
 - Length: 800-1200 words
+- Also write a catchy and extremely fun audio voice script version of the article, with a more casual tone, short sentences, and clear instructions for the user to follow along
 `,
 
     meditation: `Write a guided meditation script in English, ready to be read aloud by an AI voice.
@@ -148,7 +150,8 @@ function buildUserPrompt(
     if (userProfile) {
         const profileParts: string[] = [];
         if (userProfile.name) profileParts.push(`Name: ${userProfile.name}`);
-        if (userProfile.age) profileParts.push(`Age: ${userProfile.age} years old`);
+        if (userProfile.age)
+            profileParts.push(`Age: ${userProfile.age} years old`);
         if (userProfile.level) {
             const levelLabel = {
                 beginner: "beginner",
@@ -249,7 +252,7 @@ export async function POST(req: NextRequest) {
 
         // If content is a string, parse it as JSON
         let parsedContent = messageContent;
-        if (typeof messageContent === 'string') {
+        if (typeof messageContent === "string") {
             try {
                 parsedContent = JSON.parse(messageContent);
             } catch {
