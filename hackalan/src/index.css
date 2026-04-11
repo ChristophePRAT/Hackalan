@@ -1,0 +1,46 @@
+@import "tailwindcss";
+@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,500;1,9..144,300;1,9..144,500&family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600&display=swap');
+
+@theme {
+  --color-forest: #1a3a2a;
+  --color-sage:   #4e6e54;
+  --color-mint:   #a8c5a0;
+  --color-cream:  #f4efe6;
+  --color-sand:   #e2d5bf;
+  --color-fog:    #dce8dc;
+  --color-bark:   #7a6147;
+  --font-serif: 'Fraunces', Georgia, serif;
+  --font-sans:  'DM Sans', system-ui, sans-serif;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 17px; }
+
+body {
+  font-family: var(--font-sans);
+  background-color: #f4efe6;
+  color: #1a3a2a;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Ensure root fills full height for vertical centering */
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.fade-up { animation: fadeUp 0.48s cubic-bezier(.22,.84,.44,1) both; }
+
+@keyframes xpPop {
+  0%   { transform: translateY(28px) scale(0.92); opacity: 0; }
+  65%  { transform: translateY(-4px) scale(1.02); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+.xp-pop { animation: xpPop 0.6s cubic-bezier(.34,1.56,.64,1) both; }
