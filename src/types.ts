@@ -3,6 +3,7 @@ export type FormatType = 'meditation' | 'article' | 'video' | null;
 export type DurationType = '5' | '10' | '20' | null;
 
 export interface AppData {
+  profileId: string | null;
   goal: GoalType;
   custom: string;
   format: FormatType;

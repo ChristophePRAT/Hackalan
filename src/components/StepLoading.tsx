@@ -143,10 +143,10 @@ export default function StepLoading({ data, next, setResult }: Pick<StepProps, '
   return (
     <div className="flex flex-col items-center text-center py-4">
       <div className="mb-14">
-        <h2 className="font-semibold leading-tight text-3xl mb-3" style={{color: 'var(--color-alan-text)'}}>
+        <h2 className="font-bold leading-tight text-[2rem] mb-4" style={{color: 'var(--color-alan-text)'}}>
           Mo is working for you...
         </h2>
-        <p className="text-base" style={{color: 'var(--color-alan-text-light)'}}>
+        <p className="text-[1.05rem]" style={{color: 'var(--color-alan-text-light)'}}>
           Every piece of content is medically vetted before being shared.
         </p>
       </div>
@@ -176,7 +176,7 @@ export default function StepLoading({ data, next, setResult }: Pick<StepProps, '
           return (
             <div
               key={i}
-              className="flex items-center gap-4 px-6 py-4 rounded-[24px] transition-colors duration-300 text-left border"
+              className="flex items-center gap-5 px-8 py-6 rounded-[20px] transition-colors duration-300 text-left border-2"
               style={{
                 borderColor: isActive ? 'var(--color-alan-blue)' : 'var(--color-alan-border)',
                 backgroundColor: isActive ? 'rgba(92, 88, 246, 0.04)' : '#FFFFFF',
