@@ -2,7 +2,7 @@
 
 ## Overview
 
-The frontend sends a single `POST /api/generate` request and expects a structured JSON response. Everything else (auth, user profiles, XP persistence) is your call.
+The frontend sends a single `POST /api/analyse_data` request and expects a structured JSON response. Everything else (auth, user profiles, XP persistence) is your call.
 
 ---
 
@@ -11,7 +11,7 @@ The frontend sends a single `POST /api/generate` request and expects a structure
 | Field    | Value                     |
 |----------|---------------------------|
 | Method   | `POST`                    |
-| Path     | `/api/generate`           |
+| Path     | `/api/analyse_data`           |
 | Auth     | Optional — add `Authorization: Bearer <token>` header if needed |
 
 ---
@@ -120,14 +120,14 @@ VITE_API_BASE=https://api.your-domain.com
 Then in `StepLoading.jsx`:
 
 ```js
-const res = await fetch(`${import.meta.env.VITE_API_BASE}/api/generate`, { ... })
+const res = await fetch(`${import.meta.env.VITE_API_BASE}/api/analyse_data`, { ... })
 ```
 
 ---
 
 ## Summary Checklist
 
-- [ ] Implement `POST /api/generate` accepting `{ goal, format, duration }`
+- [ ] Implement `POST /api/analyse_data` accepting `{ goal, format, duration }`
 - [ ] Return `{ title, body, scores: { medical, brand, personalization }, xp }`
 - [ ] Set CORS headers for your frontend domain
 - [ ] (Optional) Parse `Authorization` header for auth

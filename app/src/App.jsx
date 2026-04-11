@@ -26,25 +26,31 @@ export default function App() {
   const progressStep = step // 0–4
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-14" style={{backgroundColor:'#f4efe6'}}>
-      <div className="w-full max-w-xl">
+    <div className="min-h-screen flex flex-col items-center justify-center px-6 py-20">
+      <div className="w-full max-w-2xl">
 
         {/* Brand */}
-        <header className="mb-12 fade-up">
-          <p className="text-xs uppercase tracking-[0.22em] mb-3" style={{color:'#4e6e54'}}>Alan · Mo Studios</p>
-          <h1 className="font-[--font-serif] italic font-light leading-none" style={{fontSize:'clamp(2.4rem,5vw,3.2rem)',color:'#1a3a2a'}}>
-            Votre contenu santé,<br/>pensé pour vous.
+        <header className="mb-14 fade-up text-center">
+          <div className="inline-flex items-center justify-center gap-2 mb-4">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" fill="var(--color-alan-blue)"/>
+              <circle cx="12" cy="12" r="4" fill="white"/>
+            </svg>
+            <span className="font-bold text-xl tracking-tight" style={{color: 'var(--color-alan-text)'}}>Mo Studios</span>
+          </div>
+          <h1 className="font-semibold leading-tight text-3xl" style={{color: 'var(--color-alan-text)'}}>
+            Your health content,<br/>designed for you.
           </h1>
         </header>
 
-        {/* Progress dots */}
+        {/* Progress bar (Clean Alan style) */}
         {showProgress && (
-          <div className="flex gap-2 mb-10 fade-up">
+          <div className="flex gap-2 mb-12 fade-up">
             {[0,1,2,3,4].map(i => (
               <div
                 key={i}
-                className="h-[3px] flex-1 rounded-full transition-all duration-500"
-                style={{backgroundColor: i <= progressStep ? '#1a3a2a' : '#e2d5bf'}}
+                className="h-2 flex-1 rounded-full transition-all duration-300"
+                style={{backgroundColor: i <= progressStep ? 'var(--color-alan-blue)' : 'var(--color-alan-border)'}}
               />
             ))}
           </div>
