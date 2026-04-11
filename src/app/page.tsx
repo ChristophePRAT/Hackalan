@@ -36,18 +36,15 @@ export default function Home() {
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center px-6 py-20">
-      <div className="w-full max-w-2xl">
+      <div className="w-full max-w-[800px] mx-auto">
 
         {/* Brand */}
-        <header className="mb-14 fade-up text-center">
-          <div className="inline-flex items-center justify-center gap-2 mb-4">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="10" fill="var(--color-alan-blue)"/>
-              <circle cx="12" cy="12" r="4" fill="white"/>
-            </svg>
-            <span className="font-bold text-xl tracking-tight" style={{color: 'var(--color-alan-text)'}}>Mo Studios</span>
+        <header className="mb-16 fade-up text-center">
+          <div className="inline-flex items-center justify-center gap-3 mb-6">
+            <img src="/alan-logo.png" alt="Alan Logo" className="h-[52px] w-auto" />
+            <span className="font-extrabold text-[1.6rem] tracking-tight leading-none pt-2" style={{color: 'var(--color-alan-text)'}}>Mo Studios</span>
           </div>
-          <h1 className="font-semibold leading-tight text-3xl" style={{color: 'var(--color-alan-text)'}}>
+          <h1 className="font-semibold leading-tight text-[2.75rem] mb-4" style={{color: 'var(--color-alan-text)'}}>
             Your health content,<br/>designed for you.
           </h1>
         </header>
