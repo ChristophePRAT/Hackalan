@@ -16,36 +16,20 @@ const PROFILES = [
 export default function StepProfile({ next }: StepProps) {
   return (
     <div>
-      <h2 className="font-bold leading-tight mb-4 text-[2rem] tracking-tight" style={{color: 'var(--color-alan-text)'}}>
-        Choose a profile
-      </h2>
-      <p className="text-[1.05rem] mb-12 leading-relaxed" style={{color: 'var(--color-alan-text-light)'}}>
+      <h2 className="text-[1.6rem] font-bold tracking-tight text-[#111117] mb-1.5">Choose a profile</h2>
+      <p className="text-[0.9rem] text-[#8A8A95] leading-relaxed mb-8">
         Mo will personalize the content based on this user's health data.
       </p>
 
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-4 gap-3">
         {PROFILES.map(p => (
           <button
             key={p.id}
             onClick={() => next({ profileId: p.id })}
-            className="flex flex-col items-center justify-center text-center px-8 py-10 rounded-[20px] border-2 transition-all duration-150 cursor-pointer min-h-[140px]"
-            style={{
-              borderColor: 'var(--color-alan-border)',
-              backgroundColor: '#FAFAFA',
-            }}
-            onMouseEnter={e => {
-              e.currentTarget.style.borderColor = 'var(--color-alan-blue)';
-              e.currentTarget.style.backgroundColor = '#F5F4FF';
-              e.currentTarget.style.boxShadow = '0 4px 20px rgba(92, 88, 246, 0.10)';
-            }}
-            onMouseLeave={e => {
-              e.currentTarget.style.borderColor = 'var(--color-alan-border)';
-              e.currentTarget.style.backgroundColor = '#FAFAFA';
-              e.currentTarget.style.boxShadow = 'none';
-            }}
+            className="group flex flex-col items-center justify-center text-center px-4 py-7 rounded-2xl border border-[#EBEBEF] bg-white hover:border-[#5C58F6] hover:bg-[#F5F4FF] transition-all duration-150 cursor-pointer min-h-[110px]"
           >
-            <p className="font-bold text-[0.95rem] mb-1.5 leading-snug" style={{color: 'var(--color-alan-text)'}}>{p.label}</p>
-            <p className="text-[0.78rem] font-medium" style={{color: 'var(--color-alan-text-light)'}}>{p.source}</p>
+            <p className="font-semibold text-[0.85rem] text-[#111117] leading-snug mb-1 group-hover:text-[#5C58F6] transition-colors">{p.label}</p>
+            <p className="text-[0.75rem] text-[#B0B0BB]">{p.source}</p>
           </button>
         ))}
       </div>

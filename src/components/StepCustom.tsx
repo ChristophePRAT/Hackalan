@@ -6,7 +6,7 @@ import { StepProps } from '../types';
 const SUGGESTIONS = [
   'I wake up several times a night over the past few weeks.',
   'I feel chronically tired despite getting enough sleep.',
-  'My doctor advised me to reduce stress, but I don\'t know where to start.',
+  "My doctor advised me to reduce stress, but I don't know where to start.",
   'I want to quit smoking but have tried and failed before.',
 ]
 
@@ -15,92 +15,59 @@ export default function StepCustom({ data, next, back }: Pick<StepProps, 'data' 
 
   return (
     <div>
-      <button
-        onClick={back}
-        className="flex items-center gap-2 text-sm mb-8 font-medium transition-colors"
-        style={{color: 'var(--color-alan-text-light)'}}
-        onMouseEnter={e => e.currentTarget.style.color='var(--color-alan-text)'}
-        onMouseLeave={e => e.currentTarget.style.color='var(--color-alan-text-light)'}
-      >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      {/* Back */}
+      <button onClick={back}
+        className="flex items-center gap-1.5 text-[0.875rem] font-medium text-[#B0B0BB] hover:text-[#111117] transition-colors mb-8">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
         Back
       </button>
 
-      <h2 className="font-bold leading-tight mb-4 text-[2rem] tracking-tight" style={{color: 'var(--color-alan-text)'}}>
+      {/* Heading */}
+      <h2 className="text-[1.9rem] font-bold tracking-tight text-[#111117] mb-2">
         Do you have a specific situation?
       </h2>
-      <p className="text-[1.05rem] mb-10 leading-relaxed" style={{color: 'var(--color-alan-text-light)'}}>
-        Describe it in a few words — Mo will personalize your content accordingly. This step is optional.
+      <p className="text-[1rem] text-[#8A8A95] leading-relaxed mb-7">
+        Describe it in a few words — Mo will personalize your content accordingly.
+        <span className="ml-1 text-[#B0B0BB]">Optional.</span>
       </p>
 
       {/* Textarea */}
       <textarea
         value={text}
         onChange={e => setText(e.target.value)}
-        rows={5}
-        placeholder="Ex: I often wake up around 3 AM..."
-        className="w-full rounded-2xl border-2 px-7 py-6 text-[1rem] leading-relaxed resize-none outline-none transition-all duration-200 mb-10"
-        style={{
-          borderColor: text ? 'var(--color-alan-blue)' : 'var(--color-alan-border)',
-          backgroundColor: '#FAFAFA',
-          color: 'var(--color-alan-text)',
-        }}
-        onFocus={e => { e.currentTarget.style.borderColor = 'var(--color-alan-blue)'; e.currentTarget.style.boxShadow = '0 0 0 4px rgba(92, 88, 246, 0.08)'; e.currentTarget.style.backgroundColor = '#FFFFFF' }}
-        onBlur={e => { e.currentTarget.style.borderColor = text ? 'var(--color-alan-blue)' : 'var(--color-alan-border)'; e.currentTarget.style.boxShadow = 'none'; e.currentTarget.style.backgroundColor = '#FAFAFA' }}
+        rows={4}
+        placeholder="e.g. I often wake up around 3 AM and can't fall back to sleep..."
+        className="w-full rounded-xl border border-[#EBEBEF] bg-[#FAFAFA] px-4 py-3.5 text-[0.925rem] leading-relaxed resize-none outline-none transition-all duration-200 mb-6 placeholder:text-[#C0C0C8] text-[#111117] focus:border-[#5C58F6] focus:bg-white focus:shadow-[0_0_0_3px_rgba(92,88,246,0.12)]"
+        style={{ borderColor: text ? '#5C58F6' : undefined }}
       />
 
-      {/* Suggestion chips */}
-      <p className="text-xs font-bold uppercase tracking-widest mb-5" style={{color: 'var(--color-alan-text-light)'}}>
-        Example situations
+      {/* Suggestions */}
+      <p className="text-[0.7rem] font-bold uppercase tracking-[0.1em] text-[#C0C0C8] mb-3">
+        Suggestions
       </p>
-      <div className="flex flex-col gap-3 mb-14">
+      <div className="flex flex-col gap-2 mb-12">
         {SUGGESTIONS.map((s, i) => (
-          <button
-            key={i}
-            onClick={() => setText(s)}
-            className="text-left text-[0.95rem] px-8 py-5 rounded-2xl border-2 transition-all duration-150 cursor-pointer w-full whitespace-normal break-words"
+          <button key={i} onClick={() => setText(s)}
+            className="text-left text-[0.95rem] px-6 py-4 rounded-xl border transition-colors duration-100 cursor-pointer flex items-center justify-between group min-h-[56px]"
             style={{
-              borderColor: text === s ? 'var(--color-alan-blue)' : 'var(--color-alan-border)',
-              color: text === s ? 'var(--color-alan-blue)' : 'var(--color-alan-text-light)',
-              backgroundColor: text === s ? 'rgba(92,88,246,0.06)' : '#FFFFFF',
-            }}
-            onMouseEnter={e => {
-              if (text !== s) {
-                e.currentTarget.style.borderColor = 'var(--color-alan-blue)';
-                e.currentTarget.style.color = 'var(--color-alan-text)';
-                e.currentTarget.style.backgroundColor = '#FAFAFA';
-              }
-            }}
-            onMouseLeave={e => {
-              if (text !== s) {
-                e.currentTarget.style.borderColor = 'var(--color-alan-border)';
-                e.currentTarget.style.color = 'var(--color-alan-text-light)';
-                e.currentTarget.style.backgroundColor = '#FFFFFF';
-              }
-            }}
-          >
-            {s}
+              borderColor: text === s ? '#5C58F6' : '#EBEBEF',
+              backgroundColor: text === s ? '#F5F4FF' : '#FAFAFA',
+              color: text === s ? '#5C58F6' : '#6E6E78',
+            }}>
+            <span className="leading-snug">{s}</span>
+            <svg className="shrink-0 ml-3 opacity-0 group-hover:opacity-100 transition-opacity" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </button>
         ))}
       </div>
 
-      <div className="flex gap-6 mt-4">
-        <button
-          onClick={() => next({ custom: '' })}
-          className="py-5 px-10 rounded-2xl border-2 text-[1rem] font-semibold transition-all duration-150 cursor-pointer whitespace-nowrap"
-          style={{borderColor: 'var(--color-alan-border)', color: 'var(--color-alan-text-light)', backgroundColor: 'transparent'}}
-          onMouseEnter={e => { e.currentTarget.style.borderColor = 'var(--color-alan-text)'; e.currentTarget.style.color = 'var(--color-alan-text)' }}
-          onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-alan-border)'; e.currentTarget.style.color = 'var(--color-alan-text-light)' }}
-        >
-          Skip this step
+      {/* Actions */}
+      <div className="flex gap-3">
+        <button onClick={() => next({ custom: '' })}
+          className="py-3.5 px-6 rounded-xl border border-[#EBEBEF] text-[0.875rem] font-semibold text-[#8A8A95] hover:border-[#CBCBD4] hover:text-[#111117] transition-all duration-150 cursor-pointer whitespace-nowrap bg-white">
+          Skip
         </button>
-        <button
-          onClick={() => next({ custom: text })}
-          className="flex-1 py-5 rounded-2xl font-semibold text-[1rem] transition-all duration-150 cursor-pointer"
-          style={{backgroundColor: 'var(--color-alan-blue)', color: '#FFFFFF'}}
-          onMouseEnter={e => e.currentTarget.style.backgroundColor = 'var(--color-alan-blue-hover)'}
-          onMouseLeave={e => e.currentTarget.style.backgroundColor = 'var(--color-alan-blue)'}
-        >
+        <button onClick={() => next({ custom: text })}
+          className="flex-1 py-3.5 rounded-xl bg-[#5C58F6] hover:bg-[#4844D4] text-white font-semibold text-[0.875rem] transition-all duration-150 cursor-pointer shadow-[0_1px_3px_rgba(92,88,246,0.3)]">
           Continue →
         </button>
       </div>
