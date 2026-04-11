@@ -4,7 +4,7 @@ Mo Studios is an internal content generation tool built for Alan's health coachi
 
 ---
 
-## 🚀 What it does
+## What it does
 
 1. **Select a profile** — choose from 8 Alan member personas (IT Manager, Active Gym Guy, etc.), each mapped to real wearable data sources (Withings, Whoop, Apple, Garmin…)
 2. **Describe the situation** — free-text input for the member's health topic or concern
@@ -14,9 +14,9 @@ Mo Studios is an internal content generation tool built for Alan's health coachi
 
 ---
 
-## ✨ Key features
+## Key features
 
-### 🧠 Personalized content generation
+### Personalized content generation
 
 * Calls `/api/analyse_data` to fetch real wearable health data per user
 * Calls `/api/generate` (Mistral `mistral-large-latest`) with a structured prompt including sleep, HRV, and activity data
@@ -27,7 +27,7 @@ Mo Studios is an internal content generation tool built for Alan's health coachi
 
 ---
 
-### 🎯 Interactive objectives
+### Interactive objectives
 
 * Each objective is a **color-coded card** based on its health category:
 
@@ -42,7 +42,7 @@ Mo Studios is an internal content generation tool built for Alan's health coachi
 
 ---
 
-### 🔊 Audio summary
+### Audio summary
 
 * `/api/audio-summary` takes generated content and:
 
@@ -53,7 +53,7 @@ Mo Studios is an internal content generation tool built for Alan's health coachi
 
 ---
 
-### 🏆 XP & leveling
+### XP & leveling
 
 * 300 XP per level
 * XP accumulates across sessions via `localStorage`
@@ -61,7 +61,7 @@ Mo Studios is an internal content generation tool built for Alan's health coachi
 
 ---
 
-## 🧱 Tech stack
+## Tech stack
 
 | Layer      | Tech                                                                 |
 | ---------- | -------------------------------------------------------------------- |
@@ -74,7 +74,7 @@ Mo Studios is an internal content generation tool built for Alan's health coachi
 
 ---
 
-## ⚙️ Getting started
+## Getting started
 
 ```bash
 # Install dependencies
@@ -95,7 +95,7 @@ Open: http://localhost:3000
 
 ---
 
-## 🔐 Environment variables
+## Environment variables
 
 | Variable         | Required | Description                                                     |
 | ---------------- | -------- | --------------------------------------------------------------- |
@@ -104,7 +104,7 @@ Open: http://localhost:3000
 
 ---
 
-## 🗂️ Project structure
+## Project structure
 
 ```
 src/
@@ -126,7 +126,7 @@ src/
 
 ---
 
-## 🧩 Health categories
+## Health categories
 
 Each objective is tagged with one of 10 categories, each with a distinct color:
 
@@ -143,7 +143,7 @@ Each objective is tagged with one of 10 categories, each with a distinct color:
 
 ---
 
-## 🧪 How it works (flow summary)
+## How it works (flow summary)
 
 1. User selects profile + inputs situation
 2. System fetches wearable data via `/api/analyse_data`
@@ -157,7 +157,7 @@ Each objective is tagged with one of 10 categories, each with a distinct color:
 
 ---
 
-## 🏁 Built for
+## Built for
 
 Built at the **Alan Hackathon** — designed to explore how AI + real health data can drive **personalized, actionable coaching experiences**.
 
