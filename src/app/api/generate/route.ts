@@ -263,10 +263,12 @@ export async function POST(req: NextRequest) {
         console.log("[/api/generate] Parsed content:", parsedContent);
         return NextResponse.json(parsedContent);
     } catch (err) {
-        console.error("[/api/generate] Mistral error:", err);
-        console.error("Request body was:", body);
+        const errorMessage = err instanceof Error ? err.message : String(err);
+        console.error("[/api/generate] Mistral error:", errorMessage);
+        console.error("[/api/generate] Full error:", err);
+        console.error("[/api/generate] Request body was:", JSON.stringify(body, null, 2));
         return NextResponse.json(
-            { error: "Failed to generate content", details: String(err) },
+            { error: "Failed to generate content", details: errorMessage },
             { status: 500 },
         );
     }

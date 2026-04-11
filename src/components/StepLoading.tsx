@@ -278,10 +278,10 @@ export default function StepLoading({
                                     </p>
                                 </div>
                                 <p className="text-sm font-bold text-[#111117] mb-1">
-                                    {analysisData.sleepAnalysis.duration.mean.toFixed(1)}h avg
+                                    {(analysisData.sleepAnalysis.duration.mean / 60).toFixed(1)}h avg
                                 </p>
                                 <p className="text-xs text-[#8A8A95]">
-                                    Range: {analysisData.sleepAnalysis.duration.min.toFixed(1)}h - {analysisData.sleepAnalysis.duration.max.toFixed(1)}h
+                                    Range: {(analysisData.sleepAnalysis.duration.min / 60).toFixed(1)}h - {(analysisData.sleepAnalysis.duration.max / 60).toFixed(1)}h
                                 </p>
                             </div>
                         )}
