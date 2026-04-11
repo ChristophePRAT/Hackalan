@@ -5,12 +5,6 @@ import { useRouter } from "next/navigation";
 import { AnalysisResult } from "../../types";
 import { CATEGORIES, XP_PER_LEVEL } from "../../constants";
 
-const SCORE_META = {
-    medical: { label: "Medical accuracy", color: "#10B981" },
-    brand: { label: "Mo · Alan Voice", color: "#5C58F6" },
-    personalization: { label: "Personalization", color: "#F59E0B" },
-} as const;
-
 function getCat(label?: string) {
     return (
         CATEGORIES.find((c) => c.label === label) ?? {
@@ -21,149 +15,43 @@ function getCat(label?: string) {
     );
 }
 
-function renderBody(body: string, accent: string) {
-    return body.split("\n").map((line, i) => {
-        if (line.startsWith("# "))
-            return (
-                <h1
-                    key={i}
-                    className="text-xl font-bold mt-6 mb-3 first:mt-0 text-[#111117]"
-                >
-                    {line.slice(2)}
-                </h1>
-            );
-        if (line.startsWith("## "))
-            return (
-                <h2
-                    key={i}
-                    className="text-lg font-bold mt-5 mb-2 first:mt-0 text-[#111117]"
-                >
-                    {line.slice(3)}
-                </h2>
-            );
-        if (line.startsWith("### "))
-            return (
-                <h3
-                    key={i}
-                    className="text-base font-bold mt-4 mb-2 first:mt-0 text-[#111117]"
-                >
-                    {line.slice(4)}
-                </h3>
-            );
-        if (line.trim().match(/^[-*] /)) {
-            const parts = line
-                .trim()
-                .slice(2)
-                .split(/(\*\*.*?\*\*)/g);
-            return (
-                <div key={i} className="flex gap-2.5 mb-2 ml-1">
-                    <span
-                        className="shrink-0 mt-[0.45rem] w-1 h-1 rounded-full"
-                        style={{ backgroundColor: accent }}
-                    />
-                    <p className="text-[0.875rem] leading-relaxed text-[#374151]">
-                        {parts.map((p, j) =>
-                            p.startsWith("**") && p.endsWith("**") ? (
-                                <strong
-                                    key={j}
-                                    className="font-semibold text-[#111117]"
-                                >
-                                    {p.slice(2, -2)}
-                                </strong>
-                            ) : (
-                                p
-                            ),
-                        )}
-                    </p>
-                </div>
-            );
-        }
-        const num = line.trim().match(/^(\d+)\.\s+(.*)/);
-        if (num) {
-            const parts = num[2].split(/(\*\*.*?\*\*)/g);
-            return (
-                <div key={i} className="flex gap-2.5 mb-2 ml-1">
-                    <span
-                        className="shrink-0 text-[0.8rem] font-bold mt-0.5"
-                        style={{ color: accent }}
-                    >
-                        {num[1]}.
-                    </span>
-                    <p className="text-[0.875rem] leading-relaxed text-[#374151]">
-                        {parts.map((p, j) =>
-                            p.startsWith("**") && p.endsWith("**") ? (
-                                <strong
-                                    key={j}
-                                    className="font-semibold text-[#111117]"
-                                >
-                                    {p.slice(2, -2)}
-                                </strong>
-                            ) : (
-                                p
-                            ),
-                        )}
-                    </p>
-                </div>
-            );
-        }
-        if (line.trim() === "") return <div key={i} className="h-3" />;
-        const parts = line.split(/(\*\*.*?\*\*)/g);
-        return (
-            <p
-                key={i}
-                className="mb-3 last:mb-0 text-[0.875rem] leading-relaxed text-[#374151]"
-            >
-                {parts.map((p, j) =>
-                    p.startsWith("**") && p.endsWith("**") ? (
-                        <strong
-                            key={j}
-                            className="font-semibold text-[#111117]"
-                        >
-                            {p.slice(2, -2)}
-                        </strong>
-                    ) : (
-                        p
-                    ),
-                )}
-            </p>
-        );
-    });
-}
-
 export default function ResultPage() {
     const router = useRouter();
     const [result, setResult] = useState<AnalysisResult | null>(null);
-    const [copied, setCopied] = useState(false);
-    const [validated, setValidated] = useState(false);
-    const [totalXp, setTotalXp] = useState(0);
+    const [completed, setCompleted] = useState<Set<number>>(new Set());
+    const [baseXp, setBaseXp] = useState(0);
     const [levelUp, setLevelUp] = useState(false);
 
     useEffect(() => {
         const saved = localStorage.getItem("mo-result");
         if (saved) setResult(JSON.parse(saved));
         else router.push("/");
-        setTotalXp(parseInt(localStorage.getItem("mo-total-xp") ?? "0", 10));
+        setBaseXp(parseInt(localStorage.getItem("mo-total-xp") ?? "0", 10));
     }, [router]);
 
-    const copy = () => {
-        if (result?.body) {
-            navigator.clipboard.writeText(result.body);
-            setCopied(true);
-            setTimeout(() => setCopied(false), 2200);
-        }
-    };
+    const objectives = result?.objectives ?? [];
+    const earnedXp = objectives
+        .filter((_, i) => completed.has(i))
+        .reduce((sum, o) => sum + (o.xp ?? 100), 0);
+    const totalXp = baseXp + earnedXp;
+    const level = Math.floor(totalXp / XP_PER_LEVEL) + 1;
+    const xpInLevel = totalXp % XP_PER_LEVEL;
+    const xpProgress = (xpInLevel / XP_PER_LEVEL) * 100;
 
-    const validate = () => {
-        if (validated) return;
-        const earned = result?.xp ?? 100;
-        const next = totalXp + earned;
-        if (
-            Math.floor(next / XP_PER_LEVEL) > Math.floor(totalXp / XP_PER_LEVEL)
-        )
+    const markDone = (idx: number) => {
+        if (completed.has(idx)) return;
+        const obj = objectives[idx];
+        const xpGain = obj?.xp ?? 100;
+        const prevTotal = baseXp + earnedXp;
+        const nextTotal = prevTotal + xpGain;
+        if (Math.floor(nextTotal / XP_PER_LEVEL) > Math.floor(prevTotal / XP_PER_LEVEL)) {
             setLevelUp(true);
-        localStorage.setItem("mo-total-xp", String(next));
-        setTotalXp(next);
-        setValidated(true);
+            setTimeout(() => setLevelUp(false), 3000);
+        }
+        const next = new Set(completed);
+        next.add(idx);
+        setCompleted(next);
+        localStorage.setItem("mo-total-xp", String(nextTotal));
     };
 
     if (!result)
@@ -173,357 +61,226 @@ export default function ResultPage() {
             </div>
         );
 
-    const cat = getCat(result.category);
-    const level = Math.floor(totalXp / XP_PER_LEVEL) + 1;
-    const xpInLevel = totalXp % XP_PER_LEVEL;
-    const xpProgress = (xpInLevel / XP_PER_LEVEL) * 100;
-
     return (
-        <div className="min-h-screen bg-white px-6 py-16 flex flex-col items-center">
-            <div className="w-full max-w-[600px] mx-auto">
-                {/* Brand */}
-                <header className="text-center mb-10 fade-up">
-                    <div className="inline-flex items-center gap-3">
-                        <img
-                            src="/alan-logo.png"
-                            alt="Alan"
-                            className="h-10 w-auto"
+        <div className="min-h-screen bg-white">
+            {/* Level-up toast */}
+            {levelUp && (
+                <div className="fixed top-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl bg-[#5C58F6] text-white font-semibold text-sm shadow-lg animate-bounce">
+                    Level up! Now Level {level}
+                </div>
+            )}
+
+            {/* Header */}
+            <header className="border-b border-[#EBEBEF] px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                    <img src="/alan-logo.png" alt="Alan" className="h-8 w-auto" />
+                    <span className="font-extrabold text-[1.1rem] tracking-tight text-[#111117]">Mo Studios</span>
+                </div>
+                {/* XP chip in header (mobile) */}
+                <div className="flex items-center gap-2 lg:hidden">
+                    <div className="text-right">
+                        <p className="text-[0.7rem] font-bold text-[#5C58F6]">Lv.{level}</p>
+                        <p className="text-[0.65rem] text-[#8A8A95]">{xpInLevel}/{XP_PER_LEVEL} XP</p>
+                    </div>
+                    <div className="w-20 h-1.5 rounded-full bg-[#EBEBEF] overflow-hidden">
+                        <div
+                            className="h-full rounded-full transition-all duration-700"
+                            style={{ width: `${xpProgress}%`, backgroundColor: '#5C58F6' }}
                         />
-                        <span className="font-extrabold text-[1.4rem] tracking-tight text-[#111117]">
-                            Mo Studios
-                        </span>
                     </div>
-                </header>
+                </div>
+            </header>
 
-                <div className="fade-up space-y-4">
-                    {/* Category + title */}
-                    <div>
-                        <span
-                            className="inline-flex items-center px-3 py-1 rounded-full text-[0.7rem] font-bold tracking-wide mb-3"
-                            style={{
-                                backgroundColor: cat.bg,
-                                color: cat.color,
-                            }}
-                        >
-                            {cat.label}
-                        </span>
-                        <h1 className="text-2xl font-bold tracking-tight text-[#111117] leading-snug">
-                            {result.title}
-                        </h1>
-                    </div>
+            <div className="max-w-[960px] mx-auto px-6 py-10 flex gap-8 items-start">
+                {/* ── Main content ── */}
+                <div className="flex-1 min-w-0 space-y-10">
 
-                    {/* Content card */}
-                    <div
-                        className="rounded-[20px] border-2 overflow-hidden mb-8"
-                        style={{
-                            borderColor: cat.color + "40",
-                            backgroundColor: "#FAFAFA",
-                        }}
-                    >
-                        {result.explanation &&
-                            result.explanation.length > 0 && (
-                                <>
-                                    {result.explanation.map((exp, expIdx) => (
-                                        <div key={expIdx}>
-                                            <div
-                                                className="px-8 pt-8 pb-6"
-                                                style={{
-                                                    borderBottom:
-                                                        "1px solid var(--color-alan-border)",
-                                                    backgroundColor:
-                                                        expIdx === 0
-                                                            ? cat.bg + "CC"
-                                                            : "#FAFAFA",
-                                                }}
-                                            >
-                                                <h2
-                                                    className="font-bold leading-snug text-[1.5rem]"
-                                                    style={{
-                                                        color: "var(--color-alan-text)",
-                                                    }}
-                                                >
-                                                    {exp.title}
-                                                </h2>
-                                            </div>
-                                            <div
-                                                className="px-8 py-8 text-[1rem] leading-relaxed"
-                                                style={{
-                                                    color: "var(--color-alan-text)",
-                                                }}
-                                            >
-                                                <p className="mb-0">
-                                                    {exp.paragraph}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </>
-                            )}
-                        {result.objectives && result.objectives.length > 0 && (
-                            <div
-                                className="px-8 py-8 text-[1rem] leading-relaxed"
-                                style={{ color: "var(--color-alan-text)" }}
-                            >
-                                <h3
-                                    className="font-bold text-lg mb-6"
-                                    style={{ color: "var(--color-alan-text)" }}
-                                >
-                                    Objectives
-                                </h3>
-                                <div className="space-y-4">
-                                    {result.objectives.map((obj, oIdx) => (
-                                        <div key={oIdx} className="flex gap-3">
-                                            <span
-                                                className="shrink-0 mt-1 w-1.5 h-1.5 rounded-full"
-                                                style={{
-                                                    backgroundColor: cat.color,
-                                                }}
-                                            />
-                                            <div className="flex-1">
-                                                <p className="font-semibold mb-1">
-                                                    {obj.title}
-                                                </p>
-                                                <p className="text-sm">
-                                                    {obj.description}
-                                                </p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                        <div className="px-8 pb-8">
-                            <button
-                                onClick={copy}
-                                className="w-full py-4 rounded-2xl border-2 font-semibold text-base transition-all duration-200 cursor-pointer flex items-center justify-center gap-2"
-                                style={{
-                                    borderColor: copied
-                                        ? "#10B981"
-                                        : "var(--color-alan-border)",
-                                    color: copied
-                                        ? "#10B981"
-                                        : "var(--color-alan-text)",
-                                    backgroundColor: copied
-                                        ? "#ECFDF5"
-                                        : "#FFFFFF",
-                                }}
-                            >
-                                {copied ? (
-                                    <>
-                                        <svg
-                                            width="18"
-                                            height="18"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="#10B981"
-                                            strokeWidth="2.5"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        >
-                                            <path d="M20 6L9 17l-5-5" />
-                                        </svg>
-                                        Copied
-                                    </>
-                                ) : (
-                                    <>
-                                        <svg
-                                            width="18"
-                                            height="18"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="currentColor"
-                                            strokeWidth="2.5"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                        >
-                                            <rect
-                                                x="9"
-                                                y="9"
-                                                width="13"
-                                                height="13"
-                                                rx="2"
-                                            />
-                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                                        </svg>
-                                        Copy content
-                                    </>
-                                )}
-                            </button>
-                        </div>
-                    </div>
-
-                    {/* Copy */}
-                    <button
-                        onClick={copy}
-                        className="w-full py-3 rounded-xl border text-[0.875rem] font-semibold flex items-center justify-center gap-2 transition-all duration-200 cursor-pointer"
-                        style={{
-                            borderColor: copied ? "#10B981" : "#EBEBEF",
-                            backgroundColor: copied ? "#ECFDF5" : "#FAFAFA",
-                            color: copied ? "#10B981" : "#8A8A95",
-                        }}
-                    >
-                        {copied ? (
-                            <>
-                                <svg
-                                    width="15"
-                                    height="15"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                >
-                                    <path d="M20 6L9 17l-5-5" />
-                                </svg>
-                                Copied
-                            </>
-                        ) : (
-                            <>
-                                <svg
-                                    width="15"
-                                    height="15"
-                                    viewBox="0 0 24 24"
-                                    fill="none"
-                                    stroke="currentColor"
-                                    strokeWidth="2.5"
-                                    strokeLinecap="round"
-                                    strokeLinejoin="round"
-                                >
-                                    <rect
-                                        x="9"
-                                        y="9"
-                                        width="13"
-                                        height="13"
-                                        rx="2"
-                                    />
-                                    <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
-                                </svg>
-                                Copy content
-                            </>
-                        )}
-                    </button>
-
-                    {/* Validate / XP */}
-                    <div
-                        className="rounded-xl border p-5 transition-all duration-300"
-                        style={{
-                            borderColor: validated
-                                ? cat.color + "50"
-                                : "#EBEBEF",
-                            backgroundColor: validated ? cat.bg : "#FAFAFA",
-                        }}
-                    >
-                        {!validated ? (
-                            <>
-                                <p className="font-semibold text-[0.925rem] text-[#111117] mb-1">
-                                    Complete to earn{" "}
-                                    <span style={{ color: cat.color }}>
-                                        +{result.xp ?? 100} XP
-                                    </span>
-                                </p>
-                                <p className="text-[0.8rem] text-[#8A8A95] mb-4">
-                                    Validate once you've read or listened to the
-                                    content.
-                                </p>
-                                <button
-                                    onClick={validate}
-                                    className="w-full py-3.5 rounded-xl font-semibold text-[0.875rem] text-white transition-all duration-150 cursor-pointer"
-                                    style={{ backgroundColor: cat.color }}
-                                >
-                                    ✓ Mark as done — +{result.xp ?? 100} XP
-                                </button>
-                            </>
-                        ) : (
-                            <>
-                                <div className="flex items-center justify-between mb-3">
-                                    <div>
-                                        <p
-                                            className="font-semibold text-[0.925rem] mb-0.5"
-                                            style={{ color: cat.color }}
-                                        >
-                                            {levelUp
-                                                ? `Level up! Now Level ${level} 🎉`
-                                                : `+${result.xp ?? 100} XP earned`}
-                                        </p>
-                                        <p className="text-[0.75rem] text-[#8A8A95]">
-                                            Level {level} · {xpInLevel} /{" "}
-                                            {XP_PER_LEVEL} XP
-                                        </p>
+                    {/* Explanation sections */}
+                    {result.explanation && result.explanation.length > 0 && (
+                        <section className="space-y-5">
+                            {result.explanation.map((exp, i) => (
+                                <div key={i} className={`rounded-2xl border border-[#EBEBEF] overflow-hidden ${i === 0 ? 'bg-[#F5F4FF]' : 'bg-[#FAFAFA]'}`}>
+                                    <div className="px-6 pt-6 pb-4">
+                                        <h2 className="text-[1.05rem] font-bold text-[#111117] leading-snug">{exp.title}</h2>
                                     </div>
-                                    <span
-                                        className="font-bold text-xl"
-                                        style={{ color: cat.color }}
-                                    >
-                                        Lv.{level}
-                                    </span>
-                                </div>
-                                <div className="h-1.5 rounded-full bg-[#EBEBEF] overflow-hidden">
-                                    <div
-                                        className="h-full rounded-full transition-all duration-700 ease-out"
-                                        style={{
-                                            width: `${xpProgress}%`,
-                                            backgroundColor: cat.color,
-                                        }}
-                                    />
-                                </div>
-                            </>
-                        )}
-                    </div>
-
-                    {/* Scores */}
-                    <div className="rounded-xl border border-[#EBEBEF] bg-[#FAFAFA] px-5 py-5">
-                        <p className="text-[0.65rem] font-bold uppercase tracking-[0.1em] text-[#C0C0C8] mb-5">
-                            Quality
-                        </p>
-                        <div className="flex flex-col gap-4">
-                            {Object.entries(SCORE_META).map(([key, m]) => (
-                                <div key={key}>
-                                    <div className="flex justify-between mb-1.5">
-                                        <span className="text-[0.8rem] font-medium text-[#374151]">
-                                            {m.label}
-                                        </span>
-                                        <span
-                                            className="text-[0.8rem] font-bold"
-                                            style={{ color: m.color }}
-                                        >
-                                            {result.scores?.[
-                                                key as keyof typeof result.scores
-                                            ] ?? 0}
-                                            %
-                                        </span>
-                                    </div>
-                                    <div className="h-1 rounded-full bg-[#EBEBEF] overflow-hidden">
-                                        <div
-                                            className="h-full rounded-full transition-all duration-700 ease-out"
-                                            style={{
-                                                width: `${result.scores?.[key as keyof typeof result.scores] ?? 0}%`,
-                                                backgroundColor: m.color,
-                                            }}
-                                        />
+                                    <div className="px-6 pb-6">
+                                        <p className="text-[0.875rem] text-[#374151] leading-relaxed whitespace-pre-line">{exp.paragraph}</p>
                                     </div>
                                 </div>
                             ))}
-                        </div>
-                    </div>
+                        </section>
+                    )}
 
-                    {/* Disclaimer */}
-                    <p className="text-[0.75rem] text-[#B0B0BB] leading-relaxed text-center px-2">
-                        Generated by Mo, vetted by the Alan medical team. Does
-                        not replace professional medical advice.
+                    {/* Objectives */}
+                    {objectives.length > 0 && (
+                        <section>
+                            <h2 className="text-[1.3rem] font-bold text-[#111117] mb-4">Your objectives</h2>
+                            <div className="space-y-3">
+                                {objectives.map((obj, i) => {
+                                    const cat = getCat(obj.category);
+                                    const done = completed.has(i);
+                                    return (
+                                        <div
+                                            key={i}
+                                            className="rounded-2xl border-2 transition-all duration-300 overflow-hidden"
+                                            style={{
+                                                borderColor: done ? cat.color : cat.color + '30',
+                                                backgroundColor: done ? cat.bg : '#FAFAFA',
+                                            }}
+                                        >
+                                            <div className="px-5 pt-5 pb-4 flex items-start gap-3">
+                                                {/* Checkbox */}
+                                                <button
+                                                    onClick={() => markDone(i)}
+                                                    disabled={done}
+                                                    className="shrink-0 mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all duration-200 cursor-pointer disabled:cursor-default"
+                                                    style={{
+                                                        borderColor: done ? cat.color : '#CBCBD4',
+                                                        backgroundColor: done ? cat.color : 'white',
+                                                    }}
+                                                >
+                                                    {done && (
+                                                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3.5" strokeLinecap="round" strokeLinejoin="round">
+                                                            <path d="M5 13l4 4L19 7" />
+                                                        </svg>
+                                                    )}
+                                                </button>
+
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-center gap-2 flex-wrap mb-1.5">
+                                                        {/* Category pill */}
+                                                        <span
+                                                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold tracking-wide"
+                                                            style={{ backgroundColor: cat.bg, color: cat.color, border: `1px solid ${cat.color}30` }}
+                                                        >
+                                                            {cat.label}
+                                                        </span>
+                                                        {/* XP badge */}
+                                                        <span
+                                                            className="inline-flex items-center px-2.5 py-0.5 rounded-full text-[0.65rem] font-bold tracking-wide"
+                                                            style={{ backgroundColor: done ? cat.color + '20' : '#F5F4FF', color: done ? cat.color : '#5C58F6' }}
+                                                        >
+                                                            +{obj.xp ?? 100} XP
+                                                        </span>
+                                                    </div>
+                                                    <p className={`font-semibold text-[0.925rem] leading-snug mb-1.5 ${done ? 'line-through opacity-60' : 'text-[#111117]'}`}>
+                                                        {obj.title}
+                                                    </p>
+                                                    <p className={`text-[0.8rem] leading-relaxed ${done ? 'opacity-50' : 'text-[#8A8A95]'}`}>
+                                                        {obj.description}
+                                                    </p>
+                                                </div>
+                                            </div>
+
+                                            {!done && (
+                                                <div className="px-5 pb-4">
+                                                    <button
+                                                        onClick={() => markDone(i)}
+                                                        className="w-full py-2.5 rounded-xl text-[0.8rem] font-semibold text-white transition-all duration-150 cursor-pointer"
+                                                        style={{ backgroundColor: cat.color }}
+                                                    >
+                                                        Mark as done — +{obj.xp ?? 100} XP
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </section>
+                    )}
+
+<p className="text-[0.75rem] text-[#B0B0BB] leading-relaxed text-center px-2">
+                        Generated by Mo, vetted by the Alan medical team. Does not replace professional medical advice.
                     </p>
 
-                    {/* Restart */}
                     <button
-                        onClick={() => {
-                            localStorage.removeItem("mo-result");
-                            router.push("/");
-                        }}
+                        onClick={() => { localStorage.removeItem("mo-result"); router.push("/"); }}
                         className="w-full py-3.5 rounded-xl border border-[#EBEBEF] bg-white hover:bg-[#F5F4FF] hover:border-[#5C58F6] hover:text-[#5C58F6] text-[0.875rem] font-semibold text-[#8A8A95] transition-all duration-150 cursor-pointer"
                     >
                         Create new content
                     </button>
                 </div>
+
+                {/* ── Sticky sidebar ── */}
+                <aside className="hidden lg:block w-[260px] shrink-0 sticky top-10 space-y-4">
+                    {/* XP card */}
+                    <div className="rounded-2xl border border-[#EBEBEF] bg-white p-5">
+                        <div className="flex items-center justify-between mb-3">
+                            <div>
+                                <p className="text-[0.7rem] font-bold uppercase tracking-[0.08em] text-[#C0C0C8] mb-0.5">Your level</p>
+                                <p className="text-[1.4rem] font-extrabold text-[#111117] leading-none">Lv.{level}</p>
+                            </div>
+                            <div className="w-12 h-12 rounded-xl bg-[#F5F4FF] flex items-center justify-center">
+                                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#5C58F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                                </svg>
+                            </div>
+                        </div>
+                        <div className="h-2 rounded-full bg-[#EBEBEF] overflow-hidden mb-2">
+                            <div
+                                className="h-full rounded-full transition-all duration-700 ease-out"
+                                style={{ width: `${xpProgress}%`, backgroundColor: '#5C58F6' }}
+                            />
+                        </div>
+                        <p className="text-[0.7rem] text-[#8A8A95]">{xpInLevel} / {XP_PER_LEVEL} XP · {XP_PER_LEVEL - xpInLevel} XP to next level</p>
+                        {earnedXp > 0 && (
+                            <p className="text-[0.7rem] font-bold text-[#5C58F6] mt-1">+{earnedXp} XP earned this session</p>
+                        )}
+                    </div>
+
+                    {/* Objectives checklist */}
+                    {objectives.length > 0 && (
+                        <div className="rounded-2xl border border-[#EBEBEF] bg-white p-5">
+                            <p className="text-[0.7rem] font-bold uppercase tracking-[0.08em] text-[#C0C0C8] mb-3">
+                                Objectives ({completed.size}/{objectives.length})
+                            </p>
+                            <div className="space-y-2.5">
+                                {objectives.map((obj, i) => {
+                                    const cat = getCat(obj.category);
+                                    const done = completed.has(i);
+                                    return (
+                                        <button
+                                            key={i}
+                                            onClick={() => markDone(i)}
+                                            disabled={done}
+                                            className="w-full flex items-start gap-2.5 text-left cursor-pointer disabled:cursor-default group"
+                                        >
+                                            <div
+                                                className="shrink-0 mt-0.5 w-4 h-4 rounded border-2 flex items-center justify-center transition-all duration-200"
+                                                style={{
+                                                    borderColor: done ? cat.color : '#CBCBD4',
+                                                    backgroundColor: done ? cat.color : 'transparent',
+                                                }}
+                                            >
+                                                {done && (
+                                                    <svg width="8" height="8" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round">
+                                                        <path d="M5 13l4 4L19 7" />
+                                                    </svg>
+                                                )}
+                                            </div>
+                                            <div className="min-w-0">
+                                                <p className={`text-[0.78rem] leading-snug font-medium ${done ? 'line-through opacity-50 text-[#8A8A95]' : 'text-[#111117] group-hover:text-[#5C58F6]'} transition-colors`}>
+                                                    {obj.title}
+                                                </p>
+                                                <p className="text-[0.68rem] font-bold mt-0.5" style={{ color: cat.color }}>
+                                                    +{obj.xp ?? 100} XP
+                                                </p>
+                                            </div>
+                                        </button>
+                                    );
+                                })}
+                            </div>
+
+                            {completed.size === objectives.length && objectives.length > 0 && (
+                                <div className="mt-4 pt-4 border-t border-[#EBEBEF] text-center">
+                                    <p className="text-[0.8rem] font-bold text-[#5C58F6]">All objectives done!</p>
+                                    <p className="text-[0.7rem] text-[#8A8A95] mt-0.5">+{earnedXp} XP total</p>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </aside>
             </div>
         </div>
     );
