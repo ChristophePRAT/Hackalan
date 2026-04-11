@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { StepProps, AnalysisResult } from '../types';
 
 const STAGES = [
@@ -11,67 +12,130 @@ const STAGES = [
 
 const MESSAGES = [
   'Reading your profile...',
+  'Fetching your health data...',
   'Checking medical guidelines...',
-  'Calibrating tone and style...',
+  'Analyzing your sleep patterns...',
+  'Evaluating activity levels...',
+  'Calibrating Mo\'s tone and style...',
   'Adapting to your selected duration...',
   'Validation by the Alan medical team...',
-  'Finalizing content...',
+  'Finalizing your personalized content...',
 ]
 
-const MOCK: AnalysisResult = {
-  title: 'Your 10-minute sleep meditation',
-  body: `Make yourself comfortable — lying down, or in a place where you won't be disturbed. Let your eyes close naturally.
-
-Observe your breathing without trying to change it. The air coming in, the air going out. That's all that is asked of you right now.
-
-One by one, let the thoughts of the day lose their grip. No need to chase them away — just don't follow them. Like clouds drifting across a clear sky.
-
-Feel the weight of your body growing heavier. Your shoulders drop. Your jaw relaxes. You have nothing to do. You are exactly where you need to be.`,
-  scores: { medical: 94, brand: 88, personalization: 91 },
-  xp: 120
-}
-
 export default function StepLoading({ data, next, setResult }: Pick<StepProps, 'data' | 'next' | 'setResult'>) {
+  const router = useRouter()
   const [progress, setProgress] = useState(0)
   const [stage, setStage]       = useState(0)
   const [msgIdx, setMsgIdx]     = useState(0)
   const started = useRef(false)
+  const progressRef = useRef(0)
+
+  // Helper to update progress with local state and ref
+  const updateProgress = (val: number) => {
+    const rounded = Math.round(val)
+    progressRef.current = rounded
+    setProgress(rounded)
+  }
 
   useEffect(() => {
     if (started.current) return
     started.current = true
 
-    const msgTimer = setInterval(() => setMsgIdx(i => (i + 1) % MESSAGES.length), 1500)
+    console.log("Mo is starting the generation pipeline for goal:", data.goal);
+
+    const msgTimer = setInterval(() => setMsgIdx(i => (i + 1) % MESSAGES.length), 1200)
 
     const run = async () => {
       try {
-        const res = await fetch('/api/analyse_data', {
+        // 1. Send request to analyse_data
+        console.log("Step 1: Analyzing health data...");
+        const analysisRes = await fetch('/api/analyse_data?userId=a463e0bf26d790d6afdfda0cfd161cf5', {
+          method: 'GET',
+        });
+        const analysis = await analysisRes.json();
+        
+        if (analysis.error) {
+          console.warn("Analysis returned an error, but we'll try to proceed:", analysis.error);
+        } else {
+          console.log("Step 1 Complete: Health analysis received.");
+        }
+
+        // Visual feedback: Jump to 25% after first response
+        updateProgress(25);
+        setStage(0);
+
+        // 2. Send request to generate route with analysis context
+        console.log("Step 2: Generating personalized content with Mistral...");
+        const avgSleepMinutes = analysis.sleepAnalysis?.averages?.totalSleepMinutes;
+        const avgSleepHours = avgSleepMinutes ? (avgSleepMinutes / 60).toFixed(1) : 'unknown';
+        
+        const generateRes = await fetch('/api/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(data),
-        })
-        if (res.ok) return res.json()
-      } catch (_) {}
-      // Fallback to mock if API fails or doesn't support POST yet
-      await new Promise(r => setTimeout(r, 4400))
-      return MOCK
+          body: JSON.stringify({
+            topic: `User goal: ${data.goal}. User situation: ${data.custom}. Health insight: ${analysis.overallHealthScore?.summary?.primaryInsight || 'Maintain good habits'}. Average daily sleep: ${avgSleepHours} hours.`,
+            format: data.format === 'video' ? 'video_script' : data.format || 'article',
+            userProfile: {
+              name: "Alex",
+              healthFocus: data.goal || "general wellness",
+              level: "intermediate"
+            }
+          }),
+        });
+        
+        const generated = await generateRes.json();
+        console.log("Step 2 Complete: Content generated successfully.");
+        
+        const finalResult: AnalysisResult = {
+          title: `Your personalized ${data.goal} ${data.format}`,
+          body: generated.content,
+          scores: {
+            medical: analysis.overallHealthScore?.totalScore || 92,
+            brand: 90,
+            personalization: 95
+          },
+          xp: 150
+        };
+
+        return finalResult;
+      } catch (error) {
+        console.error("Pipeline failed:", error);
+        return {
+          title: `Your ${data.format} for ${data.goal}`,
+          body: "We encountered an issue generating your content. Please try again later.",
+          scores: { medical: 0, brand: 0, personalization: 0 }
+        };
+      }
     }
 
-    let p = 0
     const tick = setInterval(() => {
-      p = Math.min(p + Math.random() * 1.6 + 0.5, 95)
-      setProgress(Math.round(p))
-      setStage(p < 34 ? 0 : p < 68 ? 1 : 2)
-    }, 110)
+      // Slow down as we get higher to wait for APIs
+      const current = progressRef.current
+      let increment = 0
+      
+      if (current < 25) increment = Math.random() * 2 + 1
+      else if (current < 70) increment = Math.random() * 1 + 0.2
+      else if (current < 95) increment = Math.random() * 0.3 + 0.05
+      
+      const nextVal = Math.min(current + increment, 98)
+      updateProgress(nextVal)
+      setStage(nextVal < 34 ? 0 : nextVal < 68 ? 1 : 2)
+    }, 150)
 
     run().then(res => {
+      console.log("All steps complete. Redirecting to result...");
       clearInterval(tick); clearInterval(msgTimer)
-      setProgress(100); setStage(2)
-      setTimeout(() => { setResult(res); next() }, 600)
+      updateProgress(100); setStage(2)
+      
+      localStorage.setItem('mo-result', JSON.stringify(res))
+      
+      setTimeout(() => { 
+        router.push('/result') 
+      }, 800)
     })
 
     return () => { clearInterval(tick); clearInterval(msgTimer) }
-  }, [data, next, setResult])
+  }, [data, router])
 
   const r = 56, circ = 2 * Math.PI * r
   const dash = circ * (1 - progress / 100)

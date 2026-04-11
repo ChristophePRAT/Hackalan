@@ -13,7 +13,7 @@ function roundToTwo(num: number): number {
 }
 
 // Helper function to calculate statistics with more metrics
-function calculateEnhancedStatistics(values: number[]): {
+function calculateEnhancedStatistics(values: number[], unit: string): {
     mean: number;
     median: number;
     std: number;
@@ -24,6 +24,7 @@ function calculateEnhancedStatistics(values: number[]): {
     q3: number;
     iqr: number;
     cv: number;
+    unit: string;
 } | null {
     if (values.length === 0) {
         return null;
@@ -55,7 +56,8 @@ function calculateEnhancedStatistics(values: number[]): {
         q1: roundToTwo(q1),
         q3: roundToTwo(q3),
         iqr: roundToTwo(iqr),
-        cv: roundToTwo(cv)
+        cv: roundToTwo(cv),
+        unit // e.g., 'minutes', 'kcal', 'count', 'meters', 'ms', 'bpm'
     };
 }
 
@@ -221,12 +223,12 @@ function analyzeEvolution(data: any[], interval: 'weekly' | 'monthly' | 'quarter
             dataPoints: bucketData.length,
             overallScore: healthScore.totalScore,
             metrics: {
-                avgSleep: sleepAnalysis.averages.totalSleep,
-                avgSteps: activityAnalysis.steps.mean,
-                avgRestingHR: cardiovascularAnalysis.restingHR.mean,
-                avgHRV: cardiovascularAnalysis.hrVariability.mean,
-                activityIntensity: activityAnalysis.intensityScore,
-                sleepEfficiency: sleepAnalysis.averages.efficiency
+                avgSleepMinutes: sleepAnalysis.averages.totalSleepMinutes,
+                avgStepsCount: activityAnalysis.steps.mean,
+                avgRestingHRBpm: cardiovascularAnalysis.restingHR.mean,
+                avgHRVms: cardiovascularAnalysis.hrVariability.mean,
+                activityIntensityScore: activityAnalysis.intensityScore,
+                sleepEfficiencyPercentage: sleepAnalysis.averages.efficiencyPercentage
             }
         };
     });
@@ -238,9 +240,9 @@ function analyzeEvolution(data: any[], interval: 'weekly' | 'monthly' | 'quarter
         
         (current as any).changeVsPrevious = {
             overallScore: prev.overallScore !== 0 ? roundToTwo(((current.overallScore - prev.overallScore) / prev.overallScore) * 100) : 0,
-            avgSteps: prev.metrics.avgSteps !== 0 ? roundToTwo(((current.metrics.avgSteps - prev.metrics.avgSteps) / prev.metrics.avgSteps) * 100) : 0,
-            avgSleep: prev.metrics.avgSleep !== 0 ? roundToTwo(((current.metrics.avgSleep - prev.metrics.avgSleep) / prev.metrics.avgSleep) * 100) : 0,
-            avgRestingHR: prev.metrics.avgRestingHR !== 0 ? roundToTwo(((current.metrics.avgRestingHR - prev.metrics.avgRestingHR) / prev.metrics.avgRestingHR) * 100) : 0,
+            avgSteps: prev.metrics.avgStepsCount !== 0 ? roundToTwo(((current.metrics.avgStepsCount - prev.metrics.avgStepsCount) / prev.metrics.avgStepsCount) * 100) : 0,
+            avgSleep: prev.metrics.avgSleepMinutes !== 0 ? roundToTwo(((current.metrics.avgSleepMinutes - prev.metrics.avgSleepMinutes) / prev.metrics.avgSleepMinutes) * 100) : 0,
+            avgRestingHR: prev.metrics.avgRestingHRBpm !== 0 ? roundToTwo(((current.metrics.avgRestingHRBpm - prev.metrics.avgRestingHRBpm) / prev.metrics.avgRestingHRBpm) * 100) : 0,
         };
     }
 
@@ -263,8 +265,8 @@ function analyzeSleepQuality(sleepData: any[]): {
     consistencyScore: number;
     regularityScore: number;
     averages: {
-        totalSleep: number;
-        efficiency: number;
+        totalSleepMinutes: number;
+        efficiencyPercentage: number;
         remPercentage: number;
         deepPercentage: number;
     };
@@ -286,16 +288,16 @@ function analyzeSleepQuality(sleepData: any[]): {
     const latencyValues = getMetricValues('SleepLatency');
     const disruptionValues = getMetricValues('SleepDisruptions');
 
-    const durationStats = calculateEnhancedStatistics(durations);
-    const efficiencyStats = calculateEnhancedStatistics(efficiencies);
+    const durationStats = calculateEnhancedStatistics(durations, 'minutes');
+    const efficiencyStats = calculateEnhancedStatistics(efficiencies, 'percentage');
     
-    const remStats = calculateEnhancedStatistics(remValues);
-    const deepStats = calculateEnhancedStatistics(deepValues);
-    const lightStats = calculateEnhancedStatistics(lightValues);
-    const awakeStats = calculateEnhancedStatistics(awakeValues);
+    const remStats = calculateEnhancedStatistics(remValues, 'minutes');
+    const deepStats = calculateEnhancedStatistics(deepValues, 'minutes');
+    const lightStats = calculateEnhancedStatistics(lightValues, 'minutes');
+    const awakeStats = calculateEnhancedStatistics(awakeValues, 'minutes');
     
-    const latencyStats = calculateEnhancedStatistics(latencyValues);
-    const disruptionStats = calculateEnhancedStatistics(disruptionValues);
+    const latencyStats = calculateEnhancedStatistics(latencyValues, 'minutes');
+    const disruptionStats = calculateEnhancedStatistics(disruptionValues, 'count');
 
     const avgTotalSleep = durationStats?.mean || 0;
     const avgEfficiency = efficiencyStats?.mean || 0;
@@ -325,8 +327,8 @@ function analyzeSleepQuality(sleepData: any[]): {
         consistencyScore,
         regularityScore,
         averages: {
-            totalSleep: avgTotalSleep,
-            efficiency: avgEfficiency,
+            totalSleepMinutes: avgTotalSleep,
+            efficiencyPercentage: avgEfficiency,
             remPercentage: totalStages > 0 ? (avgRem / totalStages) * 100 : 0,
             deepPercentage: totalStages > 0 ? (avgDeep / totalStages) * 100 : 0
         }
@@ -421,15 +423,15 @@ function analyzeActivityLevels(activityData: any[]): {
     const moderate = getMetricValues('ModerateActivityDuration');
     const vigorous = getMetricValues('VigorousActivityDuration');
 
-    const stepsStats = calculateEnhancedStatistics(steps);
-    const activeCaloriesStats = calculateEnhancedStatistics(activeCalories);
-    const totalCaloriesStats = calculateEnhancedStatistics(totalCalories);
-    const distanceStats = calculateEnhancedStatistics(distance);
+    const stepsStats = calculateEnhancedStatistics(steps, 'count');
+    const activeCaloriesStats = calculateEnhancedStatistics(activeCalories, 'kcal');
+    const totalCaloriesStats = calculateEnhancedStatistics(totalCalories, 'kcal');
+    const distanceStats = calculateEnhancedStatistics(distance, 'meters');
 
-    const sedentaryStats = calculateEnhancedStatistics(sedentary);
-    const lightStats = calculateEnhancedStatistics(light);
-    const moderateStats = calculateEnhancedStatistics(moderate);
-    const vigorousStats = calculateEnhancedStatistics(vigorous);
+    const sedentaryStats = calculateEnhancedStatistics(sedentary, 'minutes');
+    const lightStats = calculateEnhancedStatistics(light, 'minutes');
+    const moderateStats = calculateEnhancedStatistics(moderate, 'minutes');
+    const vigorousStats = calculateEnhancedStatistics(vigorous, 'minutes');
 
     const activityScore = calculateActivityScore(stepsStats?.mean || 0, activeCaloriesStats?.mean || 0);
     const intensityScore = calculateActivityIntensityScore(
@@ -521,13 +523,13 @@ function analyzeHeartRate(heartRateData: any[]): {
     const minHR = getMetricValues('HeartRateMin');
     const recovery = getMetricValues('HeartRateRecovery');
 
-    const restingHRStats = calculateEnhancedStatistics(restingHR);
-    const hrvStats = calculateEnhancedStatistics(hrv);
+    const restingHRStats = calculateEnhancedStatistics(restingHR, 'bpm');
+    const hrvStats = calculateEnhancedStatistics(hrv, 'ms');
     
-    const avgHRStats = calculateEnhancedStatistics(averageHR);
-    const maxHRStats = calculateEnhancedStatistics(maxHR);
-    const minHRStats = calculateEnhancedStatistics(minHR);
-    const recoveryStats = calculateEnhancedStatistics(recovery);
+    const avgHRStats = calculateEnhancedStatistics(averageHR, 'bpm');
+    const maxHRStats = calculateEnhancedStatistics(maxHR, 'bpm');
+    const minHRStats = calculateEnhancedStatistics(minHR, 'bpm');
+    const recoveryStats = calculateEnhancedStatistics(recovery, 'bpm');
 
     const cardiovascularScore = calculateCardiovascularScore(restingHRStats?.mean || 0, hrvStats?.mean || 0);
     
@@ -567,9 +569,10 @@ export async function GET(request: Request) {
     
     // Get parameters from query string
     const userId = searchParams.get('userId');
-    const startDate = searchParams.get('startDate') || '2025-01-01';
-    const endDate = searchParams.get('endDate') || '2025-01-31';
-    const analysisType = searchParams.get('analysisType') || 'comprehensive'; // 'comprehensive', 'sleep', 'activity', 'cardiovascular'
+    // Align default dates with fetch_data's defaults to ensure we find data
+    const startDate = searchParams.get('startDate') || '2025-05-01';
+    const endDate = searchParams.get('endDate') || '2026-04-11';
+    const analysisType = searchParams.get('analysisType') || 'comprehensive'; 
     
     // Validate required parameters
     if (!userId) {
@@ -614,12 +617,33 @@ export async function GET(request: Request) {
         
         const rawData = await response.json();
         
-        // Extract the actual data array
-        const dataArray = rawData[0]?.dataSources?.[0]?.data || [];
+        // Extract the actual data array - Thryve API returns an array of data sources
+        // We try to find any data source that contains data
+        let dataArray: any[] = [];
+        if (Array.isArray(rawData)) {
+            // Check all data sources in the array
+            for (const sourceContainer of rawData) {
+                if (sourceContainer.dataSources && Array.isArray(sourceContainer.dataSources)) {
+                    for (const source of sourceContainer.dataSources) {
+                        if (source.data && Array.isArray(source.data)) {
+                            dataArray = [...dataArray, ...source.data];
+                        }
+                    }
+                }
+            }
+        }
         
         if (dataArray.length === 0) {
             return NextResponse.json(
-                { error: 'No data available for the specified date range' },
+                { 
+                    error: 'No data available for the specified date range',
+                    debug: {
+                        userId,
+                        startDate,
+                        endDate,
+                        rawDataPreview: JSON.stringify(rawData).substring(0, 200)
+                    }
+                },
                 { status: 404 }
             );
         }
@@ -673,10 +697,10 @@ export async function GET(request: Request) {
                 const activityAnalysis = analyzeActivityLevels(activityData);
                 const cardiovascularAnalysis = analyzeHeartRate(heartRateData);
                 
-                const weightStats = calculateEnhancedStatistics(bodyCompositionData.filter(d => d.dailyDynamicValueTypeName === 'Weight').map(d => convertValue(d.value, d.valueType)));
-                const bmiStats = calculateEnhancedStatistics(bodyCompositionData.filter(d => d.dailyDynamicValueTypeName === 'BMI').map(d => convertValue(d.value, d.valueType)));
-                const fatRatioStats = calculateEnhancedStatistics(bodyCompositionData.filter(d => d.dailyDynamicValueTypeName === 'FatRatio').map(d => convertValue(d.value, d.valueType)));
-                const muscleMassStats = calculateEnhancedStatistics(bodyCompositionData.filter(d => d.dailyDynamicValueTypeName === 'MuscleMass').map(d => convertValue(d.value, d.valueType)));
+                const weightStats = calculateEnhancedStatistics(bodyCompositionData.filter(d => d.dailyDynamicValueTypeName === 'Weight').map(d => convertValue(d.value, d.valueType)), 'kg');
+                const bmiStats = calculateEnhancedStatistics(bodyCompositionData.filter(d => d.dailyDynamicValueTypeName === 'BMI').map(d => convertValue(d.value, d.valueType)), 'index');
+                const fatRatioStats = calculateEnhancedStatistics(bodyCompositionData.filter(d => d.dailyDynamicValueTypeName === 'FatRatio').map(d => convertValue(d.value, d.valueType)), 'percentage');
+                const muscleMassStats = calculateEnhancedStatistics(bodyCompositionData.filter(d => d.dailyDynamicValueTypeName === 'MuscleMass').map(d => convertValue(d.value, d.valueType)), 'kg');
 
                 analysisResult = {
                     sleepAnalysis,
@@ -732,6 +756,7 @@ function calculateOverallHealthScore(sleepAnalysis: any, activityAnalysis: any, 
         volatilityIndex: number;
         consistencyIndex: number;
     };
+    unitDocumentation: Record<string, string>;
 } {
     const sleepScore = sleepAnalysis.qualityScore;
     const activityScore = activityAnalysis.activityScore;
@@ -752,9 +777,9 @@ function calculateOverallHealthScore(sleepAnalysis: any, activityAnalysis: any, 
 
     // Calculate volatility and consistency indexes
     const volatilityIndex = (
-        (sleepAnalysis.duration.cv || 0) + 
-        (activityAnalysis.steps.cv || 0) + 
-        (cardiovascularAnalysis.restingHR.cv || 0)
+        (sleepAnalysis.duration?.cv || 0) + 
+        (activityAnalysis.steps?.cv || 0) + 
+        (cardiovascularAnalysis.restingHR?.cv || 0)
     ) / 3;
 
     const consistencyIndex = (
@@ -778,6 +803,12 @@ function calculateOverallHealthScore(sleepAnalysis: any, activityAnalysis: any, 
             }`,
             volatilityIndex: roundToTwo(volatilityIndex),
             consistencyIndex: roundToTwo(consistencyIndex)
+        },
+        unitDocumentation: {
+            sleep: "Daily averages in minutes (except efficiency and stages percentages)",
+            activity: "Daily totals (steps in count, calories in kcal, distance in meters, durations in minutes)",
+            cardiovascular: "Heart rate in bpm, HRV (RMSSD) in ms",
+            bodyComposition: "Weight and muscle mass in kg, fat ratio in percentage, BMI as index"
         }
     };
 }
