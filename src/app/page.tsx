@@ -40,8 +40,9 @@ export default function Home() {
 
         {/* Brand */}
         <header className="mb-16 fade-up text-center">
-          <div className="inline-flex items-center justify-center mb-6">
-            <img src="/alan-logo.png" alt="Alan Logo" className="h-16 w-auto" />
+          <div className="inline-flex items-center justify-center gap-3 mb-6">
+            <img src="/alan-logo.png" alt="Alan Logo" className="h-[52px] w-auto" />
+            <span className="font-extrabold text-[1.6rem] tracking-tight leading-none pt-2" style={{color: 'var(--color-alan-text)'}}>Mo Studios</span>
           </div>
           <h1 className="font-semibold leading-tight text-[2.75rem] mb-4" style={{color: 'var(--color-alan-text)'}}>
             Your health content,<br/>designed for you.
