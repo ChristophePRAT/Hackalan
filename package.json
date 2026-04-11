@@ -28,10 +28,6 @@
         "globals": "^17.4.0",
         "postcss": "^8.5.9",
         "tailwindcss": "^4.2.2",
-<<<<<<< HEAD
         "typescript": "^6.0.2"
-=======
-        "typescript": "6.0.2"
->>>>>>> ee645bbff4290df8724ee744bf8f46052b9f5c25
     }
 }
