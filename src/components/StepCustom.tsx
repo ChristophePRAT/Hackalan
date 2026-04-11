@@ -45,15 +45,16 @@ export default function StepCustom({ data, next, back }: Pick<StepProps, 'data' 
       <p className="text-[0.7rem] font-bold uppercase tracking-[0.1em] text-[#C0C0C8] mb-3">
         Suggestions
       </p>
-      <div className="flex flex-col divide-y divide-[#F2F2F5] mb-8 rounded-xl border border-[#EBEBEF] overflow-hidden">
+      <div className="flex flex-col gap-2 mb-8">
         {SUGGESTIONS.map((s, i) => (
           <button key={i} onClick={() => setText(s)}
-            className="text-left text-[0.875rem] px-4 py-3.5 transition-colors duration-100 cursor-pointer flex items-center justify-between group"
+            className="text-left text-[0.875rem] px-6 py-4 rounded-xl border transition-colors duration-100 cursor-pointer flex items-center justify-between group min-h-[52px]"
             style={{
+              borderColor: text === s ? '#5C58F6' : '#EBEBEF',
               backgroundColor: text === s ? '#F5F4FF' : '#FAFAFA',
               color: text === s ? '#5C58F6' : '#6E6E78',
             }}>
-            <span>{s}</span>
+            <span className="leading-snug">{s}</span>
             <svg className="shrink-0 ml-3 opacity-0 group-hover:opacity-100 transition-opacity" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </button>
         ))}

@@ -30,7 +30,7 @@ export default function StepConfirm({ data, next, back }: Pick<StepProps, 'data'
       <div className="rounded-xl border border-[#EBEBEF] overflow-hidden mb-6">
         {rows.map((r, i) => (
           <div key={r.key}
-            className="flex items-start justify-between px-5 py-3.5 bg-[#FAFAFA]"
+            className="flex items-start justify-between px-6 py-4 bg-[#FAFAFA]"
             style={{ borderBottom: i < rows.length - 1 ? '1px solid #EBEBEF' : 'none' }}>
             <span className="text-[0.7rem] font-bold uppercase tracking-[0.08em] text-[#C0C0C8] shrink-0 mr-6 mt-0.5 pt-px">{r.key}</span>
             <span className="text-[0.875rem] font-medium text-[#111117] text-right leading-snug">{r.val}</span>
