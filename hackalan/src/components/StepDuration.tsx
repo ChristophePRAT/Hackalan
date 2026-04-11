@@ -1,10 +1,14 @@
+'use client';
+
+import { StepProps } from '../types';
+
 const DURATIONS = [
   { id: '5',  label: '5 min',  note: 'A quick break between meetings.' },
   { id: '10', label: '10 min', note: 'Enough time to truly disconnect.' },
   { id: '20', label: '20 min', note: 'The full experience. Block your calendar.' },
-]
+] as const;
 
-export default function StepDuration({ next, back }) {
+export default function StepDuration({ next, back }: Pick<StepProps, 'next' | 'back'>) {
   return (
     <div>
       <button

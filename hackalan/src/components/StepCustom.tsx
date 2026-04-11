@@ -1,4 +1,7 @@
+'use client';
+
 import { useState } from 'react'
+import { StepProps } from '../types';
 
 const SUGGESTIONS = [
   'I wake up several times a night over the past few weeks.',
@@ -7,7 +10,7 @@ const SUGGESTIONS = [
   'I want to quit smoking but have tried and failed before.',
 ]
 
-export default function StepCustom({ data, next, back }) {
+export default function StepCustom({ data, next, back }: Pick<StepProps, 'data' | 'next' | 'back'>) {
   const [text, setText] = useState(data.custom ?? '')
 
   return (
@@ -42,8 +45,8 @@ export default function StepCustom({ data, next, back }) {
           backgroundColor: '#FFFFFF',
           color: 'var(--color-alan-text)',
         }}
-        onFocus={e => { e.target.style.borderColor = 'var(--color-alan-blue)'; e.target.style.boxShadow = '0 0 0 3px rgba(92, 88, 246, 0.1)' }}
-        onBlur={e => { e.target.style.borderColor = text ? 'var(--color-alan-blue)' : 'var(--color-alan-border)'; e.target.style.boxShadow = 'none' }}
+        onFocus={e => { e.currentTarget.style.borderColor = 'var(--color-alan-blue)'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(92, 88, 246, 0.1)' }}
+        onBlur={e => { e.currentTarget.style.borderColor = text ? 'var(--color-alan-blue)' : 'var(--color-alan-border)'; e.currentTarget.style.boxShadow = 'none' }}
       />
 
       {/* Suggestion chips */}

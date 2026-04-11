@@ -1,3 +1,7 @@
+'use client';
+
+import { StepProps } from '../types';
+
 const GOALS = [
   { id: 'sleep',     label: 'Sleep',            sub: 'Sleep better, wake up refreshed',       xp: 120 },
   { id: 'stress',    label: 'Stress',           sub: 'Find a lasting state of calm',          xp: 100 },
@@ -5,9 +9,9 @@ const GOALS = [
   { id: 'nutrition', label: 'Nutrition',        sub: 'Eat better, without deprivation',       xp: 110 },
   { id: 'tobacco',   label: 'Manage tobacco',   sub: 'Make progress at your own pace',        xp: 150 },
   { id: 'breathing', label: 'Breathing',        sub: 'A technique, a habit, a breath',        xp: 80  },
-]
+] as const;
 
-export default function StepGoal({ next }) {
+export default function StepGoal({ next }: Pick<StepProps, 'next'>) {
   return (
     <div>
       <h2 className="font-semibold leading-tight mb-3 text-3xl" style={{color: 'var(--color-alan-text)'}}>

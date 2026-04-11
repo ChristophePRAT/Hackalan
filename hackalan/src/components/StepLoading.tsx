@@ -1,4 +1,7 @@
+'use client';
+
 import { useEffect, useRef, useState } from 'react'
+import { StepProps, AnalysisResult } from '../types';
 
 const STAGES = [
   { label: 'Personalization' },
@@ -15,7 +18,7 @@ const MESSAGES = [
   'Finalizing content...',
 ]
 
-const MOCK = {
+const MOCK: AnalysisResult = {
   title: 'Your 10-minute sleep meditation',
   body: `Make yourself comfortable — lying down, or in a place where you won't be disturbed. Let your eyes close naturally.
 
@@ -24,10 +27,11 @@ Observe your breathing without trying to change it. The air coming in, the air g
 One by one, let the thoughts of the day lose their grip. No need to chase them away — just don't follow them. Like clouds drifting across a clear sky.
 
 Feel the weight of your body growing heavier. Your shoulders drop. Your jaw relaxes. You have nothing to do. You are exactly where you need to be.`,
-  scores: { medical: 94, brand: 88, personalization: 91 }
+  scores: { medical: 94, brand: 88, personalization: 91 },
+  xp: 120
 }
 
-export default function StepLoading({ data, next, setResult }) {
+export default function StepLoading({ data, next, setResult }: Pick<StepProps, 'data' | 'next' | 'setResult'>) {
   const [progress, setProgress] = useState(0)
   const [stage, setStage]       = useState(0)
   const [msgIdx, setMsgIdx]     = useState(0)
@@ -48,6 +52,7 @@ export default function StepLoading({ data, next, setResult }) {
         })
         if (res.ok) return res.json()
       } catch (_) {}
+      // Fallback to mock if API fails or doesn't support POST yet
       await new Promise(r => setTimeout(r, 4400))
       return MOCK
     }
@@ -66,7 +71,7 @@ export default function StepLoading({ data, next, setResult }) {
     })
 
     return () => { clearInterval(tick); clearInterval(msgTimer) }
-  }, [])
+  }, [data, next, setResult])
 
   const r = 56, circ = 2 * Math.PI * r
   const dash = circ * (1 - progress / 100)

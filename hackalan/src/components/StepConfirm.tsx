@@ -1,14 +1,18 @@
+'use client';
+
+import { StepProps } from '../types';
+
 const LABELS = {
   goal:     { sleep:'Sleep', stress:'Stress', detox:'Digital detox', nutrition:'Nutrition', tobacco:'Manage tobacco', breathing:'Breathing' },
   format:   { meditation:'Guided meditation', article:'Article', video:'Video script' },
   duration: { '5':'5 min', '10':'10 min', '20':'20 min' },
-}
+} as const;
 
-export default function StepConfirm({ data, next, back }) {
+export default function StepConfirm({ data, next, back }: Pick<StepProps, 'data' | 'next' | 'back'>) {
   const rows = [
-    ['Goal',      LABELS.goal[data.goal]],
-    ['Format',    LABELS.format[data.format]],
-    ['Duration',  LABELS.duration[data.duration]],
+    ['Goal',      data.goal ? LABELS.goal[data.goal as keyof typeof LABELS.goal] : ''],
+    ['Format',    data.format ? LABELS.format[data.format as keyof typeof LABELS.format] : ''],
+    ['Duration',  data.duration ? LABELS.duration[data.duration as keyof typeof LABELS.duration] : ''],
     ...(data.custom ? [['Situation', data.custom]] : []),
   ]
 

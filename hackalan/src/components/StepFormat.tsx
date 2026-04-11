@@ -1,3 +1,7 @@
+'use client';
+
+import { StepProps } from '../types';
+
 const FORMATS = [
   {
     id:    'meditation',
@@ -14,9 +18,9 @@ const FORMATS = [
     label: 'Video script',
     desc:  'Narration + scene-by-scene breakdown, ready to shoot.',
   },
-]
+] as const;
 
-export default function StepFormat({ next, back }) {
+export default function StepFormat({ next, back }: Pick<StepProps, 'next' | 'back'>) {
   return (
     <div>
       <button
