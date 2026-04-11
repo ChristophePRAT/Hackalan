@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { StepProps, AnalysisResult } from "../types";
+import { PROFILES } from "../constants";
 
 const STAGES = [{ label: "Personalization" }, { label: "Coaching" }];
 
@@ -44,9 +45,13 @@ export default function StepLoading({
 
         const run = async () => {
             try {
+                const profileId = data.profileId || "a463e0bf26d790d6afdfda0cfd161cf5";
+                const profile = PROFILES.find(p => p.id === profileId);
+                const profileName = profile?.name || "Alex";
+
                 setStage(0);
                 const analysisRes = await fetch(
-                    `/api/analyse_data?userId=${data.profileId || "a463e0bf26d790d6afdfda0cfd161cf5"}`,
+                    `/api/analyse_data?userId=${profileId}`,
                     { method: "GET" },
                 );
                 const analysis = await analysisRes.json();
@@ -64,7 +69,7 @@ export default function StepLoading({
                                 ? "video_script"
                                 : data.format || "article",
                         userProfile: {
-                            name: "Alex",
+                            name: profileName,
                             healthFocus: "general wellness",
                             level: "intermediate",
                         },

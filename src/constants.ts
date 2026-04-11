@@ -1,13 +1,15 @@
-export const userIds = [
-    "a463e0bf26d790d6afdfda0cfd161cf5",
-    "2bfaa7e6f9455ceafa0a59fd5b80496c",
-    "7f82fc3b0abba3a86b5e15c911fc5f6e",
-    "65b1357f1ceb98f51de05d1cbeb81532",
-    "1e2e53da12e0a9aebb3750af3c5857e1",
-    "26158117728afa6083c58c958eed5d89",
-    "eb634efc4ac80c9ed6a355c8a99adb83",
-    "79187771a36482f013203b32712e873d",
-];
+export const PROFILES = [
+  { id: 'a463e0bf26d790d6afdfda0cfd161cf5', name: 'Alex',       label: 'IT Manager',            source: 'Withings' },
+  { id: '2bfaa7e6f9455ceafa0a59fd5b80496c', name: 'Christophe', label: 'Active Gym Guy',         source: 'Whoop' },
+  { id: '7f82fc3b0abba3a86b5e15c911fc5f6e', name: 'Tassilo',    label: 'Moderate Student',       source: 'Samsung · Oura · Withings' },
+  { id: '65b1357f1ceb98f51de05d1cbeb81532', name: 'Samuel',     label: 'Our CPO',                source: 'Withings' },
+  { id: '1e2e53da12e0a9aebb3750af3c5857e1', name: 'Marcus',     label: 'Sedentary Techie',       source: 'Apple' },
+  { id: '26158117728afa6083c58c958eed5d89', name: 'Jordan',     label: 'Moderate Techie',        source: 'Samsung' },
+  { id: 'eb634efc4ac80c9ed6a355c8a99adb83', name: 'Elena',      label: 'Active Tennis Player',   source: 'Garmin' },
+  { id: '79187771a36482f013203b32712e873d', name: 'Robert',     label: 'Senior · Heart Patient', source: 'Withings' },
+] as const;
+
+export const userIds = PROFILES.map(p => p.id);
 
 export const CATEGORIES = [
   { label: 'Mental well-being',            color: '#8B5CF6', bg: '#F5F3FF' },
