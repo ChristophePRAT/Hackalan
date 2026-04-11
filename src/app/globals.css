@@ -3,39 +3,49 @@
 @source "../components/**/*.tsx";
 
 @theme {
-  --color-blue:        #5C58F6;
-  --color-blue-hover:  #4844D4;
-  --color-text:        #111117;
-  --color-text-muted:  #8A8A95;
-  --color-text-light:  #B0B0BB;
-  --color-border:      #EBEBEF;
-  --color-surface:     #F8F8FB;
-  --font-sans: 'AlanSans', 'Inter', system-ui, sans-serif;
+    --color-blue: #5c58f6;
+    --color-blue-hover: #4844d4;
+    --color-text: #111117;
+    --color-text-muted: #8a8a95;
+    --color-text-light: #b0b0bb;
+    --color-border: #ebebef;
+    --color-surface: #f8f8fb;
+    --font-sans: "AlanSans", "Inter", system-ui, sans-serif;
 }
 
 @font-face {
-  font-family: 'AlanSans';
-  src: url('/fonts/AlanSans-VariableFont_wght.ttf') format('truetype');
-  font-weight: 100 900;
-  font-style: normal;
-  font-display: swap;
+    font-family: "AlanSans";
+    src: url("/fonts/AlanSans-VariableFont_wght.ttf") format("truetype");
+    font-weight: 100 900;
+    font-style: normal;
+    font-display: swap;
 }
 
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+/**, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }*/
 
-html { font-size: 16px; }
+html {
+    font-size: 16px;
+}
 
 body {
-  font-family: var(--font-sans);
-  background-color: #FFFFFF;
-  color: var(--color-text);
-  min-height: 100vh;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+    font-family: var(--font-sans);
+    background-color: #ffffff;
+    color: var(--color-text);
+    min-height: 100vh;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
 @keyframes fadeUp {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
-.fade-up { animation: fadeUp 0.3s ease-out both; }
+.fade-up {
+    animation: fadeUp 0.3s ease-out both;
+}
