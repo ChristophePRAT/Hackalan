@@ -1,36 +1,164 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Mo Studios · Alan
 
-## Getting Started
+Mo Studios is an internal content generation tool built for Alan's health coaching platform. It takes a user's wearable health data and generates personalized health content — articles, meditations, or video scripts — powered by Mistral AI.
 
-First, run the development server:
+---
+
+## 🚀 What it does
+
+1. **Select a profile** — choose from 8 Alan member personas (IT Manager, Active Gym Guy, etc.), each mapped to real wearable data sources (Withings, Whoop, Apple, Garmin…)
+2. **Describe the situation** — free-text input for the member's health topic or concern
+3. **Choose duration** — 5, 10, or 20 minutes of content
+4. **Confirm & generate** — Mo fetches the member's health analysis, then calls Mistral to produce structured content
+5. **Result page** — displays explanation sections + interactive objectives with an XP/leveling system
+
+---
+
+## ✨ Key features
+
+### 🧠 Personalized content generation
+
+* Calls `/api/analyse_data` to fetch real wearable health data per user
+* Calls `/api/generate` (Mistral `mistral-large-latest`) with a structured prompt including sleep, HRV, and activity data
+* Returns a JSON with:
+
+  * `explanation[]` sections
+  * `objectives[]` (each with a category, description, and XP value)
+
+---
+
+### 🎯 Interactive objectives
+
+* Each objective is a **color-coded card** based on its health category:
+
+  * Sleep, Nutrition, Breathing & relaxation, Mental well-being, etc.
+* "Mark as done" checkbox awards XP per objective
+* Sticky sidebar shows:
+
+  * Current level
+  * XP progress bar
+  * Mini checklist
+* XP persists in `localStorage` across sessions
+
+---
+
+### 🔊 Audio summary
+
+* `/api/audio-summary` takes generated content and:
+
+  1. Uses Mistral to extract 3–4 micro-challenges
+  2. Rewrites them into a 30–45s spoken coach script
+  3. Synthesizes audio via Voxtral TTS (`voxtral-mini-tts-2603`)
+* Serves MP3 via `/api/audio-summary/file/[filename]`
+
+---
+
+### 🏆 XP & leveling
+
+* 300 XP per level
+* XP accumulates across sessions via `localStorage`
+* Level-up toast notification on milestone
+
+---
+
+## 🧱 Tech stack
+
+| Layer      | Tech                                                                 |
+| ---------- | -------------------------------------------------------------------- |
+| Framework  | Next.js 16 (App Router, Turbopack)                                   |
+| Styling    | Tailwind CSS                                                         |
+| Language   | TypeScript                                                           |
+| AI         | Mistral AI (`mistral-large-latest`, `voxtral-mini-tts-2603`)         |
+| Validation | Zod                                                                  |
+| Data       | Wearable health APIs (Withings, Whoop, Apple, Garmin, Samsung, Oura) |
+
+---
+
+## ⚙️ Getting started
 
 ```bash
+# Install dependencies
+npm install
+
+# Set environment variables
+cp .env.example .env.local
+
+# Add:
+# MISTRAL_API_KEY
+# VOXTRAL_VOICE_ID (optional)
+
+# Run dev server
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open: http://localhost:3000
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## 🔐 Environment variables
 
-## Learn More
+| Variable         | Required | Description                                                     |
+| ---------------- | -------- | --------------------------------------------------------------- |
+| MISTRAL_API_KEY  | Yes      | Your Mistral API key                                            |
+| VOXTRAL_VOICE_ID | No       | Specific voice ID for TTS (defaults to French voice if omitted) |
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🗂️ Project structure
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+```
+src/
+├── app/
+│   ├── api/
+│   │   ├── generate/        # Content generation (Mistral)
+│   │   ├── audio-summary/   # TTS coach script (Voxtral)
+│   │   └── analyse_data/    # Wearable health data proxy
+│   └── result/              # Result page with objectives + XP sidebar
+├── components/
+│   ├── StepProfile.tsx      # Profile selector
+│   ├── StepCustom.tsx       # Topic input
+│   ├── StepDuration.tsx     # Duration picker
+│   ├── StepConfirm.tsx      # Summary before generation
+│   └── StepLoading.tsx      # Generation progress + API calls
+├── constants.ts             # Categories color map, XP_PER_LEVEL
+└── types.ts                 # AppData, AnalysisResult, Objective interfaces
+```
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## 🧩 Health categories
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Each objective is tagged with one of 10 categories, each with a distinct color:
+
+* Mental well-being
+* Sleep
+* Sport & physical activity
+* Nutrition
+* Breathing & relaxation
+* Digital detox
+* Habits & addictions
+* Productivity & organization
+* Relationships & social life
+* Personal development
+
+---
+
+## 🧪 How it works (flow summary)
+
+1. User selects profile + inputs situation
+2. System fetches wearable data via `/api/analyse_data`
+3. Data is structured into a prompt and sent to Mistral
+4. Mistral returns:
+
+   * Explanation content
+   * Actionable objectives
+5. Frontend renders results + tracks XP
+6. Optional: audio summary generated via TTS
+
+---
+
+## 🏁 Built for
+
+Built at the **Alan Hackathon** — designed to explore how AI + real health data can drive **personalized, actionable coaching experiences**.
+
+---
