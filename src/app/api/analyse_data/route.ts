@@ -603,7 +603,7 @@ export async function GET(request: Request) {
     
     try {
         // Fetch data from our own API endpoint
-        const fetchUrl = `http://localhost:3000/api/fetch_data?userId=${userId}&dataType=daily&startDate=${startDate}&endDate=${endDate}`;
+        const fetchUrl = `/api/fetch_data?userId=${userId}&dataType=daily&startDate=${startDate}&endDate=${endDate}`;
         
         const response = await fetch(fetchUrl);
         
