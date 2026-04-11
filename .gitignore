@@ -24,3 +24,6 @@ dist-ssr
 *.sw?
 .next/
 .env
+
+thryve_creds.txt
+thryve-hackathon-guide.md
