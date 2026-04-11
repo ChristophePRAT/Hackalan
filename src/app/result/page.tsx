@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { AnalysisResult } from "../../types";
 import { CATEGORIES, XP_PER_LEVEL } from "../../constants";
@@ -28,7 +28,6 @@ export default function ResultPage() {
     const [audioState, setAudioState] = useState<AudioState>("idle");
     const [audioUrl, setAudioUrl] = useState<string | null>(null);
     const [coachScript, setCoachScript] = useState<string | null>(null);
-    const audioFetched = useRef(false);
 
     useEffect(() => {
         const saved = localStorage.getItem("mo-result");
@@ -38,28 +37,9 @@ export default function ResultPage() {
     }, [router]);
 
     useEffect(() => {
-        if (!result?.voiceScript || audioFetched.current) return;
-
-        audioFetched.current = true;
-        setAudioState("loading");
+        if (!result?.voiceScript) return;
+        // Store voiceScript for fallback display
         setCoachScript(result.voiceScript);
-
-        // Generate audio from voiceScript
-        fetch("/api/audio-summary", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ generatedContent: result.voiceScript }),
-        })
-            .then((res) => res.json())
-            .then((data) => {
-                if (data.audioUrl) {
-                    setAudioUrl(data.audioUrl);
-                    setAudioState("ready");
-                } else {
-                    setAudioState("error");
-                }
-            })
-            .catch(() => setAudioState("error"));
     }, [result]);
 
     const objectives = result?.objectives ?? [];
